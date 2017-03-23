@@ -199,6 +199,7 @@ public class Main_window {
 	private boolean compareResultTimeoutsCombined = false;
 	private boolean withReportInTask;
 	private boolean delayedSaveToSlot = false;
+	private boolean versionWarningAlreadyShown = false;
 	private int delayedSaveToSlotNumber;
 	private int compareResultCombined;
 	private Timer sysexWaitTimer;
@@ -2335,6 +2336,7 @@ public class Main_window {
 		if (midi_handler.isMidiOpen()) {
 			tglbtnMidi.setText("Close MIDI");
 			tglbtnMidi.setSelected(true);
+			versionWarningAlreadyShown = false;
 			midi_handler.requestVersionAndMcu();
 		} else {
 			tglbtnMidi.setText("Open MIDI");
@@ -2470,18 +2472,21 @@ public class Main_window {
 							commsStateLabel.setText("SysEx Ok");
 							commsStateLabel.setBackground(Color.GREEN);
 							if (ver < Constants.MD_MINIMUM_VERSION) {
-								lblVersion.setBackground(Color.RED);
-								Timer warning_timer = new Timer();
-								warning_timer.schedule(new TimerTask() {
-									
-									@Override
-									public void run() {
-										JOptionPane.showMessageDialog(null,
-											    "<html><font size=5>"+Constants.WARNING_VERSION+"</font></html>",
-											    "Warning",
-											    JOptionPane.WARNING_MESSAGE);
-									}
-								}, 200);
+								if (!versionWarningAlreadyShown) {
+									versionWarningAlreadyShown = true;
+									lblVersion.setBackground(Color.RED);
+									Timer warning_timer = new Timer();
+									warning_timer.schedule(new TimerTask() {
+										
+										@Override
+										public void run() {
+											JOptionPane.showMessageDialog(null,
+												    "<html><font size=5>"+Constants.WARNING_VERSION+"</font></html>",
+												    "Warning",
+												    JOptionPane.WARNING_MESSAGE);
+										}
+									}, 200);
+								}
 							} else {
 								lblVersion.setBackground(Color.GREEN);
 							}
