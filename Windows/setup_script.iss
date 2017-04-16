@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "MegaDrum Manager"
-#define MyAppVersion "20161102"
+#define MyAppVersion "20170413"
 #define MyAppPublisher "Dmitri Skachkov"
 #define MyAppURL "http://www.megadrum.info/"
 #define MyAppExeName "MegaDrumManager.exe"
