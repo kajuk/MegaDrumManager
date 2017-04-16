@@ -4,7 +4,7 @@ import java.awt.Color;
 
 public interface Constants {
 	//public static final int MIDI_BARS_COUNT = 32;
-	public static final String MD_VERSION = "20170413";
+	public static final String MD_VERSION = "20170416";
 	public static final int MD_MINIMUM_VERSION = 20170413;
 	public static final String WARNING_VERSION = "<html><font size=2>For full compatibilty between MegaDrum Manager and MegaDrum</font></html>\n" +
 			"<html><font size=2>you should upgrade MegaDrum to version " + MD_MINIMUM_VERSION + " or newer</font></html>";
@@ -34,7 +34,7 @@ public interface Constants {
 	public static final byte MD_SYSEX_MISC = (byte)0x01;
 	public static final byte MD_SYSEX_MISC_SIZE = 17;
 	public static final byte MD_SYSEX_PEDAL = (byte)0x02;
-	public static final byte MD_SYSEX_PEDAL_SIZE = 87;
+	public static final byte MD_SYSEX_PEDAL_SIZE = 95;
 	public static final byte MD_SYSEX_PAD = (byte)0x03;
 	public static final byte MD_SYSEX_PAD_SIZE = 34;
 	public static final byte MD_SYSEX_3RD = (byte)0x04;
