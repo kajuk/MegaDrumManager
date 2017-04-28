@@ -418,10 +418,14 @@ public class Midi_handler {
 		// A workaround for Windows USB MIDI bug? or STM32F205 USB MIDI bug?
 		// Where first 8 (2x4) MIDI SysEx replies from MegaDrum are lost
 		for (int i = 0; i < 5; i++) {
-			requestVersion();
-			delayMs(configOptions.sysexDelay);
-			requestMCU();
-			delayMs(configOptions.sysexDelay);			
+			if (configOptions.version < 1) {
+				requestVersion();
+				delayMs(configOptions.sysexDelay);				
+			}
+			if (configOptions.mcuType < 1) {
+				requestMCU();
+				delayMs(configOptions.sysexDelay);			
+			}
 		}
 	}
 	

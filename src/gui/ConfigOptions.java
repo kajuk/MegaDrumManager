@@ -37,6 +37,7 @@ public class ConfigOptions implements java.io.Serializable {
 	public Point [] framesPositions = { new Point(10,10), new Point(210,10), new Point(410,10), new Point(610,10), new Point(810,10)};
 	public int [] showPanels = { Constants.PANEL_SHOW, Constants.PANEL_SHOW, Constants.PANEL_SHOW, Constants.PANEL_SHOW, Constants.PANEL_HIDE };
 	public int mcuType = 0;
+	public int version = 0;
 	public boolean autoResize = true;
 	public boolean changeNotified = false;
 

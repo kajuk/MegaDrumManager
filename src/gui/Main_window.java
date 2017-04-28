@@ -1411,6 +1411,7 @@ public class Main_window {
 					lblVersion.setBackground(UIManager.getColor ("lblVersion.background"));
 					lblMCU.setText("Unknown");
 					configOptions.mcuType = 0;
+					configOptions.version = 0;
 					commsStateLabel.setVisible(false);
 					lblCfgSlotsNr.setText("??");
 					lblCfgCurrent.setText("??");
@@ -2468,6 +2469,7 @@ public class Main_window {
 								b |= (int)buffer[i*2 + 5];
 								ver += b<<(8*i);
 							}
+							configOptions.version = ver;
 							lblVersion.setText(((Integer)ver).toString());
 							commsStateLabel.setText("SysEx Ok");
 							commsStateLabel.setBackground(Color.GREEN);
