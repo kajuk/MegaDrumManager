@@ -25,6 +25,7 @@ public class ConfigMisc {
 	public boolean send_triggered_in = false;
 	public boolean alt_note_choking = false;
 	public int syncState = Constants.SYNC_STATE_UNKNOWN;
+	public boolean sysexReceived = false;
 
 	public ConfigMisc (){
 	}

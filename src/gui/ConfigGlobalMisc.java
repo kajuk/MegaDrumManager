@@ -17,6 +17,7 @@ public class ConfigGlobalMisc {
 	public boolean config_names_en = false;
 	public boolean midi2_for_sysex = false;
 	public int syncState = Constants.SYNC_STATE_UNKNOWN;
+	public boolean sysexReceived = false;
 
 	public ConfigGlobalMisc (){
 	}

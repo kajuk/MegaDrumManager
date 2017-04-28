@@ -7,6 +7,7 @@ public class ConfigCustomName {
 	//public int [] yValues = {2, 32, 64, 96, 128, 160, 192, 224, 255};
 	public String name = "Custom__";
 	public int syncState = Constants.SYNC_STATE_UNKNOWN;
+	public boolean sysexReceived = false;
 
 	public ConfigCustomName() {
 	}

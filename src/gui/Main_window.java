@@ -1629,9 +1629,15 @@ public class Main_window {
 	}
 	
 	private void getPedal() {
+		int delayCounter;
 		compareSysexToConfigIsOn = false;
+		configFull.configPedal.sysexReceived = false;
+		delayCounter = configOptions.sysexDelay;
 		midi_handler.requestConfigPedal();
-		delayMs(configOptions.sysexDelay);
+		while ((delayCounter > 0) && (!configFull.configPedal.sysexReceived)) {
+			delayMs(1);
+			delayCounter--;
+		}
 	}
 	
 	private void sendWithReport(boolean withReport) {
@@ -1659,23 +1665,48 @@ public class Main_window {
 	}
 	
 	private void getGlobalMisc() {
+		int delayCounter;
 		compareSysexToConfigIsOn = false;
+		configFull.configGlobalMisc.sysexReceived = false;
+		delayCounter = configOptions.sysexDelay;
 		midi_handler.requestConfigGlobalMisc();					
-		delayMs(configOptions.sysexDelay);
+		while ((delayCounter > 0) && (!configFull.configGlobalMisc.sysexReceived)) {
+			delayMs(1);
+			delayCounter--;
+		}
 		getReadOnlyData();
 		if (configFull.configGlobalMisc.config_names_en) {
 			compareSysexToConfigIsOn = false;
+			configFull.configNameSysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigConfigName(configFull.configCurrent);								
+			while ((delayCounter > 0) && (!configFull.configNameSysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
 		}
 	}
 
+
 	private void getReadOnlyData() {
+		int delayCounter;
 		compareSysexToConfigIsOn = false;
+		configFull.configCountSysexReceived = false;
+		delayCounter = configOptions.sysexDelay;
 		midi_handler.requestConfigCount();					
-		delayMs(configOptions.sysexDelay);
+		while ((delayCounter > 0) && (!configFull.configCountSysexReceived)) {
+			delayMs(1);
+			delayCounter--;
+		}
+
 		compareSysexToConfigIsOn = false;
+		configFull.configCurrentSysexReceived = false;
+		delayCounter = configOptions.sysexDelay;
 		midi_handler.requestConfigCurrent();					
-		delayMs(configOptions.sysexDelay);
+		while ((delayCounter > 0) && (!configFull.configCurrentSysexReceived)) {
+			delayMs(1);
+			delayCounter--;
+		}
 	}
 
 	private void sendGlobalMisc(boolean withReport) {
@@ -1697,9 +1728,15 @@ public class Main_window {
 	}
 
 	private void getMisc() {
+		int delayCounter;
 		compareSysexToConfigIsOn = false;
+		configFull.configMisc.sysexReceived = false;
+		delayCounter = configOptions.sysexDelay;
 		midi_handler.requestConfigMisc();					
-		delayMs(configOptions.sysexDelay);
+		while ((delayCounter > 0) && (!configFull.configMisc.sysexReceived)) {
+			delayMs(1);
+			delayCounter--;
+		}
 	}
 	
 	private void sendMisc(boolean withReport) {
@@ -1717,22 +1754,63 @@ public class Main_window {
 	
 	private void getPad(int pad_id) {
 		compareSysexToConfigIsOn = false;
+		int delayCounter;
 		if ( pad_id > 0 ) {
+			configFull.configPads[pad_id].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigPad(pad_id + 1);
-			delayMs(configOptions.sysexDelay);
+			while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
+			
+			configFull.configPads[pad_id + 1].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigPad(pad_id + 2);
-			delayMs(configOptions.sysexDelay);
+			while ((delayCounter > 0) && (!configFull.configPads[pad_id + 1].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
+			
+			configFull.configPos[pad_id].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigPos(pad_id);
-			delayMs(configOptions.sysexDelay);
+			while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
+
+			configFull.configPos[pad_id + 1].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigPos(pad_id + 1);
-			delayMs(configOptions.sysexDelay);
+			while ((delayCounter > 0) && (!configFull.configPos[pad_id + 1].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
+
+			configFull.config3rds[(pad_id - 1)/2].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfig3rd((pad_id - 1)/2);
-			delayMs(configOptions.sysexDelay);
+			while ((delayCounter > 0) && (!configFull.config3rds[(pad_id - 1)/2].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}			
 		} else {
+			configFull.configPads[0].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigPad(1);
-			delayMs(configOptions.sysexDelay);
+			while ((delayCounter > 0) && (!configFull.configPads[0].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
+			
+			configFull.configPos[0].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigPos(0);
-			delayMs(configOptions.sysexDelay);
+			while ((delayCounter > 0) && (!configFull.configPos[0].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
 		}
 	}
 	
@@ -1920,15 +1998,27 @@ public class Main_window {
 	}
 
 	private void getCustomName(int name_id) {
+		int delayCounter;
 		compareSysexToConfigIsOn = false;
+		configFull.configCustomNames[name_id].sysexReceived = false;
+		delayCounter = configOptions.sysexDelay;
 		midi_handler.requestConfigCustomName(name_id);
-		delayMs(configOptions.sysexDelay);
+		while ((delayCounter > 0) && (!configFull.configCustomNames[name_id].sysexReceived)) {
+			delayMs(1);
+			delayCounter--;
+		}
 	}
-
+		
 	private void getConfigName(int name_id) {
+		int delayCounter;
 		compareSysexToConfigIsOn = false;
+		configFull.configConfigNames[name_id].sysexReceived = false;
+		delayCounter = configOptions.sysexDelay;
 		midi_handler.requestConfigConfigName(name_id);
-		delayMs(configOptions.sysexDelay*2);
+		while ((delayCounter > 0) && (!configFull.configConfigNames[name_id].sysexReceived)) {
+			delayMs(1);
+			delayCounter--;
+		}
 	}
 
 	private void sendCustomName(int name_id, boolean withReport) {
@@ -2007,11 +2097,17 @@ public class Main_window {
 
 	}
 	private void getCurve(int curve_id) {
+		int delayCounter;
 		compareSysexToConfigIsOn = false;
+		configFull.configCurves[curve_id].sysexReceived = false;
+		delayCounter = configOptions.sysexDelay;
 		midi_handler.requestConfigCurve(curve_id);
-		delayMs(configOptions.sysexDelay);
+		while ((delayCounter > 0) && (!configFull.configCurves[curve_id].sysexReceived)) {
+			delayMs(1);
+			delayCounter--;
+		}
 	}
-	
+
 	private void sendCurve(int curve_id, boolean withReport) {
 		byte [] sysexCurve = new byte[Constants.MD_SYSEX_CURVE_SIZE];
 		Utils.copyConfigCurveToSysex(configFull.configCurves[curve_id], sysexCurve, configOptions.chainId, curve_id);
@@ -2029,7 +2125,7 @@ public class Main_window {
 		compareSysexToConfigIsOn = false;
 		for (int i = 0; i<Constants.CURVES_COUNT; i++) {
 			getCurve(i);
-    		delayMs(5);
+    		//delayMs(5);
 		}
 	}
 		
@@ -2429,18 +2525,21 @@ public class Main_window {
 						Utils.copySysexToConfigMisc(midi_handler.bufferIn, configFull.configMisc);
 						Utils.copySysexToConfigMisc(midi_handler.bufferIn, moduleConfigFull.configMisc);
 						configFull.configMisc.syncState = Constants.SYNC_STATE_RECEIVED;
+						configFull.configMisc.sysexReceived = true;
 						controlsMisc.updateControls();
 						break;
 					case Constants.MD_SYSEX_PEDAL:
 						Utils.copySysexToConfigPedal(midi_handler.bufferIn, configFull.configPedal);
 						Utils.copySysexToConfigPedal(midi_handler.bufferIn, moduleConfigFull.configPedal);
 						configFull.configPedal.syncState = Constants.SYNC_STATE_RECEIVED;
+						configFull.configPedal.sysexReceived = true;
 						controlsPedal.updateControls();
 						break;
 					case Constants.MD_SYSEX_PAD:
 						Utils.copySysexToConfigPad(midi_handler.bufferIn, configFull.configPads[buffer[4] - 1]);
 						Utils.copySysexToConfigPad(midi_handler.bufferIn, moduleConfigFull.configPads[buffer[4] - 1]);
 						configFull.configPads[buffer[4] - 1].syncState = Constants.SYNC_STATE_RECEIVED;
+						configFull.configPads[buffer[4] - 1].sysexReceived = true;
 						controlsPads.updateControls();
 						break;
 					case Constants.MD_SYSEX_POS:
@@ -2452,12 +2551,14 @@ public class Main_window {
 						}
 						Utils.copySysexToConfigPos(midi_handler.bufferIn, configFull.configPos[id]);
 						Utils.copySysexToConfigPos(midi_handler.bufferIn, moduleConfigFull.configPos[id]);
+						configFull.configPos[id].sysexReceived = true;
 						controlsPads.updateControls();
 						break;
 					case Constants.MD_SYSEX_3RD:
 						Utils.copySysexToConfig3rd(midi_handler.bufferIn, configFull.config3rds[buffer[4]]);
 						Utils.copySysexToConfig3rd(midi_handler.bufferIn, moduleConfigFull.config3rds[buffer[4]]);
 						configFull.config3rds[buffer[4]].syncState = Constants.SYNC_STATE_RECEIVED;
+						configFull.config3rds[buffer[4]].sysexReceived = true;
 						controlsPads.updateControls();
 						break;
 					case Constants.MD_SYSEX_VERSION:
@@ -2498,17 +2599,20 @@ public class Main_window {
 						Utils.copySysexToConfigCurve(midi_handler.bufferIn, configFull.configCurves[buffer[4]]);
 						Utils.copySysexToConfigCurve(midi_handler.bufferIn, moduleConfigFull.configCurves[buffer[4]]);
 						configFull.configCurves[buffer[4]].syncState = Constants.SYNC_STATE_RECEIVED;
+						configFull.configCurves[buffer[4]].sysexReceived = true;
 						controlsPadsExtra.updateControls();
 						break;
 					case Constants.MD_SYSEX_CUSTOM_NAME:
 						Utils.copySysexToConfigCustomName(midi_handler.bufferIn, configFull.configCustomNames[buffer[4]]);
 						Utils.copySysexToConfigCustomName(midi_handler.bufferIn, moduleConfigFull.configCustomNames[buffer[4]]);
 						configFull.configCustomNames[buffer[4]].syncState = Constants.SYNC_STATE_RECEIVED;
+						configFull.configCustomNames[buffer[4]].sysexReceived = true;
 						controlsPadsExtra.updateControls();
 						break;
 					case Constants.MD_SYSEX_CONFIG_NAME:
 						Utils.copySysexToConfigConfigName(midi_handler.bufferIn, configFull.configConfigNames[buffer[4]]);
 						Utils.copySysexToConfigConfigName(midi_handler.bufferIn, moduleConfigFull.configConfigNames[buffer[4]]);
+						configFull.configConfigNames[buffer[4]].sysexReceived = true;
 						if (buffer[4] < configFull.configNamesCount) {
 							menuItemsSaveToSlot[buffer[4]].setText(((Integer)(buffer[4]+1)).toString() + " " + configFull.configConfigNames[buffer[4]].name);
 							popupMenuItemsSaveToSlot[buffer[4]].setText(((Integer)(buffer[4]+1)).toString() + " " + configFull.configConfigNames[buffer[4]].name);
@@ -2523,6 +2627,7 @@ public class Main_window {
 						Utils.copySysexToConfigGlobalMisc(midi_handler.bufferIn, configFull.configGlobalMisc);
 						Utils.copySysexToConfigGlobalMisc(midi_handler.bufferIn, moduleConfigFull.configGlobalMisc);
 						configFull.configGlobalMisc.syncState = Constants.SYNC_STATE_RECEIVED;
+						configFull.configGlobalMisc.sysexReceived = true;
 						int c = comboBox_inputsCount.getSelectedIndex();
 						comboBox_inputsCount.setSelectedIndexWithoutEvent((configFull.configGlobalMisc.inputs_count - Constants.MIN_INPUTS)/2);
 						if (comboBox_inputsCount.getSelectedIndex() != c) {
@@ -2576,6 +2681,7 @@ public class Main_window {
 								mntmLoadFromMd.add(menuItemsLoadFromSlot[i]);
 							}
 						}
+						configFull.configCountSysexReceived = true;
 						break;
 					case Constants.MD_SYSEX_CONFIG_CURRENT:
 						if (buffer.length >= Constants.MD_SYSEX_CONFIG_CURRENT_SIZE) {
@@ -2586,6 +2692,7 @@ public class Main_window {
 							commsStateLabel.setBackground(Color.GREEN);
 							//popupMenuSaveToSlot.removeAll();
 						}
+						configFull.configCurrentSysexReceived = true;
 						break;
 					default:
 						break;

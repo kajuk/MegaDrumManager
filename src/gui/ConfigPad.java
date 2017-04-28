@@ -33,6 +33,7 @@ public class ConfigPad {
 	public boolean pressrollNote_linked = false;
 	public boolean inputDisabled = false;
 	public int syncState = Constants.SYNC_STATE_UNKNOWN;
+	public boolean sysexReceived = false;
 
 	
 	public ConfigPad (){

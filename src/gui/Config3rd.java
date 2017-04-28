@@ -12,6 +12,8 @@ public class Config3rd {
 	public boolean pressrollNote_linked = false;
 	public boolean altNote_linked = false;
 	public int syncState = Constants.SYNC_STATE_UNKNOWN;
+	public boolean sysexReceived = false;
+
 
 	public Config3rd () {
 	}

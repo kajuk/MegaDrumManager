@@ -10,6 +10,8 @@ public class ConfigPositional {
 	public int level = 0;
 	public int low = 5;
 	public int high = 15;
+	public boolean sysexReceived = false;
+
 	
 	public ConfigPositional (){
 	}
