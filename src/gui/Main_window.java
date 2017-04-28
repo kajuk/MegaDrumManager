@@ -1630,13 +1630,15 @@ public class Main_window {
 	
 	private void getPedal() {
 		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.configPedal.sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigPedal();
-		while ((delayCounter > 0) && (!configFull.configPedal.sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			configFull.configPedal.sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
+			midi_handler.requestConfigPedal();
+			while ((delayCounter > 0) && (!configFull.configPedal.sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
 		}
 	}
 	
@@ -1654,38 +1656,42 @@ public class Main_window {
 	
 	private void sendPedal(boolean withReport) {
 		int delayCounter;
-		byte [] sysexPedal = new byte[Constants.MD_SYSEX_PEDAL_SIZE];
-		Utils.copyConfigPedalToSysex(configFull.configPedal, sysexPedal, configOptions.chainId);
-		midi_handler.sendSysex(sysexPedal);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_PEDAL_SIZE/3);
-		sendWithReport(withReport);
-		midi_handler.requestConfigPedal();
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
-		getPedal();
+		if (midi_handler.isMidiOpen()) {
+			byte [] sysexPedal = new byte[Constants.MD_SYSEX_PEDAL_SIZE];
+			Utils.copyConfigPedalToSysex(configFull.configPedal, sysexPedal, configOptions.chainId);
+			midi_handler.sendSysex(sysexPedal);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_PEDAL_SIZE/3);
+			sendWithReport(withReport);
+			midi_handler.requestConfigPedal();
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+			getPedal();
+		}
 	}
 	
 	private void getGlobalMisc() {
 		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.configGlobalMisc.sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigGlobalMisc();					
-		while ((delayCounter > 0) && (!configFull.configGlobalMisc.sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
-		}
-		getReadOnlyData();
-		if (configFull.configGlobalMisc.config_names_en) {
+		if (midi_handler.isMidiOpen()) {
 			compareSysexToConfigIsOn = false;
-			configFull.configNameSysexReceived = false;
+			configFull.configGlobalMisc.sysexReceived = false;
 			delayCounter = configOptions.sysexDelay;
-			midi_handler.requestConfigConfigName(configFull.configCurrent);								
-			while ((delayCounter > 0) && (!configFull.configNameSysexReceived)) {
+			midi_handler.requestConfigGlobalMisc();					
+			while ((delayCounter > 0) && (!configFull.configGlobalMisc.sysexReceived)) {
 				delayMs(1);
 				delayCounter--;
+			}
+			getReadOnlyData();
+			if (configFull.configGlobalMisc.config_names_en) {
+				compareSysexToConfigIsOn = false;
+				configFull.configNameSysexReceived = false;
+				delayCounter = configOptions.sysexDelay;
+				midi_handler.requestConfigConfigName(configFull.configCurrent);								
+				while ((delayCounter > 0) && (!configFull.configNameSysexReceived)) {
+					delayMs(1);
+					delayCounter--;
+				}
 			}
 		}
 	}
@@ -1693,74 +1699,146 @@ public class Main_window {
 
 	private void getReadOnlyData() {
 		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.configCountSysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigCount();					
-		while ((delayCounter > 0) && (!configFull.configCountSysexReceived)) {
-			delayMs(1);
-			delayCounter--;
-		}
-
-		compareSysexToConfigIsOn = false;
-		configFull.configCurrentSysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigCurrent();					
-		while ((delayCounter > 0) && (!configFull.configCurrentSysexReceived)) {
-			delayMs(1);
-			delayCounter--;
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			configFull.configCountSysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
+			midi_handler.requestConfigCount();					
+			while ((delayCounter > 0) && (!configFull.configCountSysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
+	
+			compareSysexToConfigIsOn = false;
+			configFull.configCurrentSysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
+			midi_handler.requestConfigCurrent();					
+			while ((delayCounter > 0) && (!configFull.configCurrentSysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
 		}
 	}
 
 	private void sendGlobalMisc(boolean withReport) {
-		byte [] sysexGlobalMisc = new byte[Constants.MD_SYSEX_GLOBAL_MISC_SIZE];
-		Utils.copyConfigGlobalMiscToSysex(configFull.configGlobalMisc, sysexGlobalMisc, configOptions.chainId);
-		midi_handler.sendSysex(sysexGlobalMisc);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_GLOBAL_MISC_SIZE/3);
-		sendWithReport(withReport);
-		midi_handler.requestConfigGlobalMisc();
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
-    	if (configFull.configNameChanged) {
-    		configFull.configNameChanged = false;
-    		sendConfigName(configFull.configCurrent, withReport);
-    	}
-    	getGlobalMisc();
-    	getReadOnlyData();
+		if (midi_handler.isMidiOpen()) {
+			byte [] sysexGlobalMisc = new byte[Constants.MD_SYSEX_GLOBAL_MISC_SIZE];
+			Utils.copyConfigGlobalMiscToSysex(configFull.configGlobalMisc, sysexGlobalMisc, configOptions.chainId);
+			midi_handler.sendSysex(sysexGlobalMisc);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_GLOBAL_MISC_SIZE/3);
+			sendWithReport(withReport);
+			midi_handler.requestConfigGlobalMisc();
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+	    	if (configFull.configNameChanged) {
+	    		configFull.configNameChanged = false;
+	    		sendConfigName(configFull.configCurrent, withReport);
+	    	}
+	    	getGlobalMisc();
+	    	getReadOnlyData();
+		}
 	}
 
 	private void getMisc() {
 		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.configMisc.sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigMisc();					
-		while ((delayCounter > 0) && (!configFull.configMisc.sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			configFull.configMisc.sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
+			midi_handler.requestConfigMisc();					
+			while ((delayCounter > 0) && (!configFull.configMisc.sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
 		}
 	}
 	
 	private void sendMisc(boolean withReport) {
-		byte [] sysexMisc = new byte[Constants.MD_SYSEX_MISC_SIZE];
-		Utils.copyConfigMiscToSysex(configFull.configMisc, sysexMisc, configOptions.chainId);
-		midi_handler.sendSysex(sysexMisc);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_MISC_SIZE/3);
-		sendWithReport(withReport);
-		midi_handler.requestConfigMisc();
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
-    	getMisc();
+		if (midi_handler.isMidiOpen()) {
+			byte [] sysexMisc = new byte[Constants.MD_SYSEX_MISC_SIZE];
+			Utils.copyConfigMiscToSysex(configFull.configMisc, sysexMisc, configOptions.chainId);
+			midi_handler.sendSysex(sysexMisc);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_MISC_SIZE/3);
+			sendWithReport(withReport);
+			midi_handler.requestConfigMisc();
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+	    	getMisc();
+		}
 	}
 	
 	private void getPad(int pad_id) {
-		compareSysexToConfigIsOn = false;
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			int delayCounter;
+			if ( pad_id > 0 ) {
+				configFull.configPads[pad_id].sysexReceived = false;
+				delayCounter = configOptions.sysexDelay;
+				midi_handler.requestConfigPad(pad_id + 1);
+				while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
+					delayMs(1);
+					delayCounter--;
+				}
+				
+				configFull.configPads[pad_id + 1].sysexReceived = false;
+				delayCounter = configOptions.sysexDelay;
+				midi_handler.requestConfigPad(pad_id + 2);
+				while ((delayCounter > 0) && (!configFull.configPads[pad_id + 1].sysexReceived)) {
+					delayMs(1);
+					delayCounter--;
+				}
+				
+				configFull.configPos[pad_id].sysexReceived = false;
+				delayCounter = configOptions.sysexDelay;
+				midi_handler.requestConfigPos(pad_id);
+				while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
+					delayMs(1);
+					delayCounter--;
+				}
+	
+				configFull.configPos[pad_id + 1].sysexReceived = false;
+				delayCounter = configOptions.sysexDelay;
+				midi_handler.requestConfigPos(pad_id + 1);
+				while ((delayCounter > 0) && (!configFull.configPos[pad_id + 1].sysexReceived)) {
+					delayMs(1);
+					delayCounter--;
+				}
+	
+				configFull.config3rds[(pad_id - 1)/2].sysexReceived = false;
+				delayCounter = configOptions.sysexDelay;
+				midi_handler.requestConfig3rd((pad_id - 1)/2);
+				while ((delayCounter > 0) && (!configFull.config3rds[(pad_id - 1)/2].sysexReceived)) {
+					delayMs(1);
+					delayCounter--;
+				}			
+			} else {
+				configFull.configPads[0].sysexReceived = false;
+				delayCounter = configOptions.sysexDelay;
+				midi_handler.requestConfigPad(1);
+				while ((delayCounter > 0) && (!configFull.configPads[0].sysexReceived)) {
+					delayMs(1);
+					delayCounter--;
+				}
+				
+				configFull.configPos[0].sysexReceived = false;
+				delayCounter = configOptions.sysexDelay;
+				midi_handler.requestConfigPos(0);
+				while ((delayCounter > 0) && (!configFull.configPos[0].sysexReceived)) {
+					delayMs(1);
+					delayCounter--;
+				}
+			}
+		}
+	}
+	
+	private void getPadOneZone(int pad_id) {
 		int delayCounter;
-		if ( pad_id > 0 ) {
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
 			configFull.configPads[pad_id].sysexReceived = false;
 			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigPad(pad_id + 1);
@@ -1768,15 +1846,7 @@ public class Main_window {
 				delayMs(1);
 				delayCounter--;
 			}
-			
-			configFull.configPads[pad_id + 1].sysexReceived = false;
-			delayCounter = configOptions.sysexDelay;
-			midi_handler.requestConfigPad(pad_id + 2);
-			while ((delayCounter > 0) && (!configFull.configPads[pad_id + 1].sysexReceived)) {
-				delayMs(1);
-				delayCounter--;
-			}
-			
+	
 			configFull.configPos[pad_id].sysexReceived = false;
 			delayCounter = configOptions.sysexDelay;
 			midi_handler.requestConfigPos(pad_id);
@@ -1784,471 +1854,462 @@ public class Main_window {
 				delayMs(1);
 				delayCounter--;
 			}
-
-			configFull.configPos[pad_id + 1].sysexReceived = false;
-			delayCounter = configOptions.sysexDelay;
-			midi_handler.requestConfigPos(pad_id + 1);
-			while ((delayCounter > 0) && (!configFull.configPos[pad_id + 1].sysexReceived)) {
-				delayMs(1);
-				delayCounter--;
-			}
-
-			configFull.config3rds[(pad_id - 1)/2].sysexReceived = false;
-			delayCounter = configOptions.sysexDelay;
-			midi_handler.requestConfig3rd((pad_id - 1)/2);
-			while ((delayCounter > 0) && (!configFull.config3rds[(pad_id - 1)/2].sysexReceived)) {
-				delayMs(1);
-				delayCounter--;
-			}			
-		} else {
-			configFull.configPads[0].sysexReceived = false;
-			delayCounter = configOptions.sysexDelay;
-			midi_handler.requestConfigPad(1);
-			while ((delayCounter > 0) && (!configFull.configPads[0].sysexReceived)) {
-				delayMs(1);
-				delayCounter--;
-			}
-			
-			configFull.configPos[0].sysexReceived = false;
-			delayCounter = configOptions.sysexDelay;
-			midi_handler.requestConfigPos(0);
-			while ((delayCounter > 0) && (!configFull.configPos[0].sysexReceived)) {
-				delayMs(1);
-				delayCounter--;
-			}
-		}
-	}
-	
-	private void getPadOneZone(int pad_id) {
-		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.configPads[pad_id].sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigPad(pad_id + 1);
-		while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
-		}
-
-		configFull.configPos[pad_id].sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigPos(pad_id);
-		while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
 		}
 	}
 
 	
 	private void getThirdZone(int pad_id) {
 		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.config3rds[pad_id].sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfig3rd(pad_id);
-		while ((delayCounter > 0) && (!configFull.config3rds[pad_id].sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
-		}			
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			configFull.config3rds[pad_id].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
+			midi_handler.requestConfig3rd(pad_id);
+			while ((delayCounter > 0) && (!configFull.config3rds[pad_id].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
+		}
 	}
 	
 	private void sendPadOneZone(int pad_id, boolean withReport) {
-		byte [] sysexPad = new byte[Constants.MD_SYSEX_PAD_SIZE];
-		byte [] sysexPos = new byte[Constants.MD_SYSEX_POS_SIZE];
-		
-		Utils.copyConfigPadToSysex(configFull.configPads[pad_id], sysexPad, configOptions.chainId, pad_id);
-		midi_handler.sendSysex(sysexPad);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_PAD_SIZE/3);		
-		sendWithReport(withReport);
-		midi_handler.requestConfigPad(pad_id + 1);
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
-
-    	if (configOptions.mcuType == 0) return;	// Unknown MCU so it's not clear how to handle positional sysex
-		int id = pad_id;
-		if (configOptions.mcuType < 3){
-			//Atmega MCU, 8 (Atmega1284) or 4 (Atmega644) head/bow inputs with positional sensing starting from Snare
-			if (id < 3) return;
-			id = id - 3;
-			if ((id&1) > 0) return;
-			id = id/2;
-			if (id > 7) return;
-			if ((configOptions.mcuType < 2) && (id > 3)) return;
+		if (midi_handler.isMidiOpen()) {
+			byte [] sysexPad = new byte[Constants.MD_SYSEX_PAD_SIZE];
+			byte [] sysexPos = new byte[Constants.MD_SYSEX_POS_SIZE];
+			
+			Utils.copyConfigPadToSysex(configFull.configPads[pad_id], sysexPad, configOptions.chainId, pad_id);
+			midi_handler.sendSysex(sysexPad);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_PAD_SIZE/3);		
+			sendWithReport(withReport);
+			midi_handler.requestConfigPad(pad_id + 1);
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+	
+	    	if (configOptions.mcuType == 0) return;	// Unknown MCU so it's not clear how to handle positional sysex
+			int id = pad_id;
+			if (configOptions.mcuType < 3){
+				//Atmega MCU, 8 (Atmega1284) or 4 (Atmega644) head/bow inputs with positional sensing starting from Snare
+				if (id < 3) return;
+				id = id - 3;
+				if ((id&1) > 0) return;
+				id = id/2;
+				if (id > 7) return;
+				if ((configOptions.mcuType < 2) && (id > 3)) return;
+			}
+			Utils.copyConfigPosToSysex(configFull.configPos[pad_id], sysexPos, configOptions.chainId, pad_id);
+			sysexPos[4] = (byte)id; 
+			midi_handler.sendSysex(sysexPos);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_POS_SIZE/3);	
+			sendWithReport(withReport);
+			midi_handler.requestConfigPos(pad_id);
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+	    	getPadOneZone(pad_id);
 		}
-		Utils.copyConfigPosToSysex(configFull.configPos[pad_id], sysexPos, configOptions.chainId, pad_id);
-		sysexPos[4] = (byte)id; 
-		midi_handler.sendSysex(sysexPos);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_POS_SIZE/3);	
-		sendWithReport(withReport);
-		midi_handler.requestConfigPos(pad_id);
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
-    	getPadOneZone(pad_id);
 	}
 	
 	private void sendThirdZone(int pad_id, boolean withReport) {
 		byte [] sysex3rd = new byte[Constants.MD_SYSEX_3RD_SIZE];
 		
-		pad_id = (pad_id - 1)/2;
-		Utils.copyConfig3rdToSysex(configFull.config3rds[pad_id], sysex3rd, configOptions.chainId, pad_id);
-		midi_handler.sendSysex(sysex3rd);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_3RD_SIZE/3);
-		sendWithReport(withReport);
-		midi_handler.requestConfig3rd(pad_id);
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
-    	getThirdZone(pad_id);
+		if (midi_handler.isMidiOpen()) {
+			pad_id = (pad_id - 1)/2;
+			Utils.copyConfig3rdToSysex(configFull.config3rds[pad_id], sysex3rd, configOptions.chainId, pad_id);
+			midi_handler.sendSysex(sysex3rd);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_3RD_SIZE/3);
+			sendWithReport(withReport);
+			midi_handler.requestConfig3rd(pad_id);
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+	    	getThirdZone(pad_id);
+		}
 	}
 
 	private void sendPad(int pad_id, boolean withReport) {
 
-		if (withReport) {
-			compareResultCombined = 0;
-			compareResultTimeoutsCombined = false;
-			compareSysexToConfigLast = false;
-			commsStateLabel.setBackground(Color.YELLOW);
-			commsStateLabel.setText("SysEx Wait");
-		}
-		if (pad_id == 0) {
-			compareSysexToConfigLast = withReport;			
-		}
-		sendPadOneZone(pad_id, false);
-		if (pad_id > 0 ) {
-			sendPadOneZone(pad_id + 1, false);
-			compareSysexToConfigLast = withReport;
-			sendThirdZone(pad_id, false);
+		if (midi_handler.isMidiOpen()) {
+			if (withReport) {
+				compareResultCombined = 0;
+				compareResultTimeoutsCombined = false;
+				compareSysexToConfigLast = false;
+				commsStateLabel.setBackground(Color.YELLOW);
+				commsStateLabel.setText("SysEx Wait");
+			}
+			if (pad_id == 0) {
+				compareSysexToConfigLast = withReport;			
+			}
+			sendPadOneZone(pad_id, false);
+			if (pad_id > 0 ) {
+				sendPadOneZone(pad_id + 1, false);
+				compareSysexToConfigLast = withReport;
+				sendThirdZone(pad_id, false);
+			}
 		}
 	}
 	
 	private void getAllPads() {
-		compareSysexToConfigIsOn = false;
-		progressBar.setVisible(true);
-		Thread t = new Thread(new Runnable() {
-            public void run() {
-                // since we're not on the EDT,
-                // let's put the setVisible-code
-                // into the Event Dispatching Queue
-                SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                		int i;
-                        resizeWindow = false;
-                		progressBar.setMinimum(0);
-                		progressBar.setMaximum(configFull.configGlobalMisc.inputs_count - 3);
-                		for (i = 0; i<(configFull.configGlobalMisc.inputs_count - 2); i++) {
-                			progressBar.setValue(i);
-                			Rectangle progressRect = progressBar.getBounds();
-                			progressRect.x = 0;
-                			progressRect.y = 0;
-                			progressBar.paintImmediately( progressRect );
-                			getPad(i);
-                			if (i>0) {
-                				i++;
-                			}
-                		}
-                		progressBar.setVisible(false);
-                        resizeWindow = true;
-                        resizeMainWindow();
-                   }
-                });
-            }
-
-		});
-        t.setPriority( Thread.NORM_PRIORITY );
-        t.run();
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			progressBar.setVisible(true);
+			Thread t = new Thread(new Runnable() {
+	            public void run() {
+	                // since we're not on the EDT,
+	                // let's put the setVisible-code
+	                // into the Event Dispatching Queue
+	                SwingUtilities.invokeLater( new Runnable() {
+	                    public void run() {
+	                		int i;
+	                        resizeWindow = false;
+	                		progressBar.setMinimum(0);
+	                		progressBar.setMaximum(configFull.configGlobalMisc.inputs_count - 3);
+	                		for (i = 0; i<(configFull.configGlobalMisc.inputs_count - 2); i++) {
+	                			progressBar.setValue(i);
+	                			Rectangle progressRect = progressBar.getBounds();
+	                			progressRect.x = 0;
+	                			progressRect.y = 0;
+	                			progressBar.paintImmediately( progressRect );
+	                			getPad(i);
+	                			if (i>0) {
+	                				i++;
+	                			}
+	                		}
+	                		progressBar.setVisible(false);
+	                        resizeWindow = true;
+	                        resizeMainWindow();
+	                   }
+	                });
+	            }
+	
+			});
+	        t.setPriority( Thread.NORM_PRIORITY );
+	        t.run();
+		}
 	}
 		
 	private void sendAllPadsInThisThread(boolean withReport) {
-		progressBar.setVisible(true);
-		sendWithReport(withReport);
-		if (withReport) {
-			compareResultCombined = 0;
-			compareResultTimeoutsCombined = false;
-			compareSysexToConfigLast = false;
-			commsStateLabel.setBackground(Color.YELLOW);
-			commsStateLabel.setText("SysEx Wait");
-		}
-		withReportInTask = withReport;
-		int i;
-        resizeWindow = false;
-		progressBar.setMinimum(0);
-		progressBar.setMaximum(configFull.configGlobalMisc.inputs_count - 3);
-		for (i = 0; i < (configFull.configGlobalMisc.inputs_count - 4); i++) {
-			progressBar.setValue(i);
-			Rectangle progressRect = progressBar.getBounds();
-			progressRect.x = 0;
-			progressRect.y = 0;
-			progressBar.paintImmediately( progressRect );
-			sendPad(i, false);
-			if (i>0) {
-				i++;
+		if (midi_handler.isMidiOpen()) {
+			progressBar.setVisible(true);
+			sendWithReport(withReport);
+			if (withReport) {
+				compareResultCombined = 0;
+				compareResultTimeoutsCombined = false;
+				compareSysexToConfigLast = false;
+				commsStateLabel.setBackground(Color.YELLOW);
+				commsStateLabel.setText("SysEx Wait");
 			}
+			withReportInTask = withReport;
+			int i;
+	        resizeWindow = false;
+			progressBar.setMinimum(0);
+			progressBar.setMaximum(configFull.configGlobalMisc.inputs_count - 3);
+			for (i = 0; i < (configFull.configGlobalMisc.inputs_count - 4); i++) {
+				progressBar.setValue(i);
+				Rectangle progressRect = progressBar.getBounds();
+				progressRect.x = 0;
+				progressRect.y = 0;
+				progressBar.paintImmediately( progressRect );
+				sendPad(i, false);
+				if (i>0) {
+					i++;
+				}
+			}
+			compareSysexToConfigLast = withReportInTask;
+			sendPad(configFull.configGlobalMisc.inputs_count - 3, false);
+			progressBar.setVisible(false);
+	        resizeWindow = true;
+	        resizeMainWindow();
 		}
-		compareSysexToConfigLast = withReportInTask;
-		sendPad(configFull.configGlobalMisc.inputs_count - 3, false);
-		progressBar.setVisible(false);
-        resizeWindow = true;
-        resizeMainWindow();
 	}
 
 	private void sendAllPads(boolean withReport) {
-		progressBar.setVisible(true);
-		sendWithReport(withReport);
-		if (withReport) {
-			compareResultCombined = 0;
-			compareResultTimeoutsCombined = false;
-			compareSysexToConfigLast = false;
-			commsStateLabel.setBackground(Color.YELLOW);
-			commsStateLabel.setText("SysEx Wait");
+		if (midi_handler.isMidiOpen()) {
+			progressBar.setVisible(true);
+			sendWithReport(withReport);
+			if (withReport) {
+				compareResultCombined = 0;
+				compareResultTimeoutsCombined = false;
+				compareSysexToConfigLast = false;
+				commsStateLabel.setBackground(Color.YELLOW);
+				commsStateLabel.setText("SysEx Wait");
+			}
+			withReportInTask = withReport;
+			Thread t = new Thread(new Runnable() {
+	            public void run() {
+	                // since we're not on the EDT,
+	                // let's put the setVisible-code
+	                // into the Event Dispatching Queue
+	                SwingUtilities.invokeLater( new Runnable() {
+	                    public void run() {
+	                    	sendAllPadsInThisThread(withReportInTask);
+	                   }
+	                });
+	            }
+	
+			});
+	        t.setPriority( Thread.NORM_PRIORITY );
+	        t.run();
 		}
-		withReportInTask = withReport;
-		Thread t = new Thread(new Runnable() {
-            public void run() {
-                // since we're not on the EDT,
-                // let's put the setVisible-code
-                // into the Event Dispatching Queue
-                SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                    	sendAllPadsInThisThread(withReportInTask);
-                   }
-                });
-            }
-
-		});
-        t.setPriority( Thread.NORM_PRIORITY );
-        t.run();
 	}
 
 	private void getCustomName(int name_id) {
 		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.configCustomNames[name_id].sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigCustomName(name_id);
-		while ((delayCounter > 0) && (!configFull.configCustomNames[name_id].sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			configFull.configCustomNames[name_id].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
+			midi_handler.requestConfigCustomName(name_id);
+			while ((delayCounter > 0) && (!configFull.configCustomNames[name_id].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
 		}
 	}
 		
 	private void getConfigName(int name_id) {
 		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.configConfigNames[name_id].sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigConfigName(name_id);
-		while ((delayCounter > 0) && (!configFull.configConfigNames[name_id].sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			configFull.configConfigNames[name_id].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
+			midi_handler.requestConfigConfigName(name_id);
+			while ((delayCounter > 0) && (!configFull.configConfigNames[name_id].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
 		}
 	}
 
 	private void sendCustomName(int name_id, boolean withReport) {
 		byte [] sysexCustomName = new byte[Constants.MD_SYSEX_CUSTOM_NAME_SIZE];
-		Utils.copyConfigCustomNameToSysex(configFull.configCustomNames[name_id], sysexCustomName, configOptions.chainId, name_id);
-		midi_handler.sendSysex(sysexCustomName);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_CUSTOM_NAME_SIZE/3);
-		sendWithReport(withReport);
-		midi_handler.requestConfigCustomName(name_id);
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
-    	getCustomName(name_id);
+		if (midi_handler.isMidiOpen()) {
+			Utils.copyConfigCustomNameToSysex(configFull.configCustomNames[name_id], sysexCustomName, configOptions.chainId, name_id);
+			midi_handler.sendSysex(sysexCustomName);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_CUSTOM_NAME_SIZE/3);
+			sendWithReport(withReport);
+			midi_handler.requestConfigCustomName(name_id);
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+	    	getCustomName(name_id);
+		}
 	}
 
 	private void sendConfigName(int name_id, boolean withReport) {
 		byte [] sysexConfigName = new byte[Constants.MD_SYSEX_CONFIG_NAME_SIZE];
-		Utils.copyConfigConfigNameToSysex(configFull.configConfigNames[name_id], sysexConfigName, configOptions.chainId, name_id);
-		midi_handler.sendSysex(sysexConfigName);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_CONFIG_NAME_SIZE/3);
-		sendWithReport(withReport);
-		midi_handler.requestConfigConfigName(name_id);
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
+		if (midi_handler.isMidiOpen()) {
+			Utils.copyConfigConfigNameToSysex(configFull.configConfigNames[name_id], sysexConfigName, configOptions.chainId, name_id);
+			midi_handler.sendSysex(sysexConfigName);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_CONFIG_NAME_SIZE/3);
+			sendWithReport(withReport);
+			midi_handler.requestConfigConfigName(name_id);
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+		}
 	}
 
 	private void getAllCustomNames() {
-		compareSysexToConfigIsOn = false;
-		for (int i = 0; i < configFull.customNamesCount; i++) {
-			getCustomName(i);
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			for (int i = 0; i < configFull.customNamesCount; i++) {
+				getCustomName(i);
+			}
 		}
 	}
 		
 	private void getAllConfigNames() {
-		if (configFull.configGlobalMisc.config_names_en) {
-			compareSysexToConfigIsOn = false;
-			for (int i = 0; i < configFull.configNamesCount; i++) {
-				getConfigName(i);
-			}			
+		if (midi_handler.isMidiOpen()) {
+			if (configFull.configGlobalMisc.config_names_en) {
+				compareSysexToConfigIsOn = false;
+				for (int i = 0; i < configFull.configNamesCount; i++) {
+					getConfigName(i);
+				}			
+			}
 		}
 	}
 
 	private void sendAllCustomNamesInThisThread(boolean withReport) {
-		for (int i = 0; i < (configFull.customNamesCount - 1); i++) {
-			sendCustomName(i, false);
+		if (midi_handler.isMidiOpen()) {
+			for (int i = 0; i < (configFull.customNamesCount - 1); i++) {
+				sendCustomName(i, false);
+			}
+			compareSysexToConfigLast = withReportInTask;
+			sendCustomName(configFull.customNamesCount - 1, false);
 		}
-		compareSysexToConfigLast = withReportInTask;
-		sendCustomName(configFull.customNamesCount - 1, false);		
 	}
 	
 	private void sendAllCustomNames(boolean withReport) {
-		if (withReport) {
-			compareResultCombined = 0;
-			compareResultTimeoutsCombined = false;
-			compareSysexToConfigLast = false;
-			commsStateLabel.setBackground(Color.YELLOW);
-			commsStateLabel.setText("SysEx Wait");
+		if (midi_handler.isMidiOpen()) {
+			if (withReport) {
+				compareResultCombined = 0;
+				compareResultTimeoutsCombined = false;
+				compareSysexToConfigLast = false;
+				commsStateLabel.setBackground(Color.YELLOW);
+				commsStateLabel.setText("SysEx Wait");
+			}
+			withReportInTask = withReport;
+			Thread t = new Thread(new Runnable() {
+	            public void run() {
+	                // since we're not on the EDT,
+	                // let's put the setVisible-code
+	                // into the Event Dispatching Queue
+	                SwingUtilities.invokeLater( new Runnable() {
+	                    public void run() {
+	                    	sendAllCustomNamesInThisThread(withReportInTask);
+	                   }
+	                });
+	            }
+	
+			});
+	        t.setPriority( Thread.NORM_PRIORITY );
+	        t.run();
 		}
-		withReportInTask = withReport;
-		Thread t = new Thread(new Runnable() {
-            public void run() {
-                // since we're not on the EDT,
-                // let's put the setVisible-code
-                // into the Event Dispatching Queue
-                SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                    	sendAllCustomNamesInThisThread(withReportInTask);
-                   }
-                });
-            }
-
-		});
-        t.setPriority( Thread.NORM_PRIORITY );
-        t.run();
-
 	}
 	private void getCurve(int curve_id) {
 		int delayCounter;
-		compareSysexToConfigIsOn = false;
-		configFull.configCurves[curve_id].sysexReceived = false;
-		delayCounter = configOptions.sysexDelay;
-		midi_handler.requestConfigCurve(curve_id);
-		while ((delayCounter > 0) && (!configFull.configCurves[curve_id].sysexReceived)) {
-			delayMs(1);
-			delayCounter--;
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			configFull.configCurves[curve_id].sysexReceived = false;
+			delayCounter = configOptions.sysexDelay;
+			midi_handler.requestConfigCurve(curve_id);
+			while ((delayCounter > 0) && (!configFull.configCurves[curve_id].sysexReceived)) {
+				delayMs(1);
+				delayCounter--;
+			}
 		}
 	}
 
 	private void sendCurve(int curve_id, boolean withReport) {
 		byte [] sysexCurve = new byte[Constants.MD_SYSEX_CURVE_SIZE];
-		Utils.copyConfigCurveToSysex(configFull.configCurves[curve_id], sysexCurve, configOptions.chainId, curve_id);
-		midi_handler.sendSysex(sysexCurve);
-		//delayMs(configOptions.sysexDelay);
-		//delayMs(Constants.MD_SYSEX_CURVE_SIZE/3);
-		sendWithReport(withReport);
-		midi_handler.requestConfigCurve(curve_id);
-    	while (compareSysexToConfigIsOn) {
-    		delayMs(2);
-    	}
-    	getCurve(curve_id);
+		if (midi_handler.isMidiOpen()) {
+			Utils.copyConfigCurveToSysex(configFull.configCurves[curve_id], sysexCurve, configOptions.chainId, curve_id);
+			midi_handler.sendSysex(sysexCurve);
+			//delayMs(configOptions.sysexDelay);
+			//delayMs(Constants.MD_SYSEX_CURVE_SIZE/3);
+			sendWithReport(withReport);
+			midi_handler.requestConfigCurve(curve_id);
+	    	while (compareSysexToConfigIsOn) {
+	    		delayMs(2);
+	    	}
+	    	getCurve(curve_id);
+		}
 	}
 	
 	private void getAllCurves() {
-		compareSysexToConfigIsOn = false;
-		for (int i = 0; i<Constants.CURVES_COUNT; i++) {
-			getCurve(i);
-    		//delayMs(5);
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			for (int i = 0; i<Constants.CURVES_COUNT; i++) {
+				getCurve(i);
+	    		//delayMs(5);
+			}
 		}
 	}
 		
 	private void sendAllCurvesInThisThread(boolean withReport) {
-		for (int i = 0; i < (Constants.CURVES_COUNT - 1); i++) {
-			sendCurve(i, false);
+		if (midi_handler.isMidiOpen()) {
+			for (int i = 0; i < (Constants.CURVES_COUNT - 1); i++) {
+				sendCurve(i, false);
+			}
+			compareSysexToConfigLast = withReportInTask;
+			sendCurve(Constants.CURVES_COUNT - 1, false);
 		}
-		compareSysexToConfigLast = withReportInTask;
-		sendCurve(Constants.CURVES_COUNT - 1, false);
 	}
 	
 	private void sendAllCurves(boolean withReport) {
-		if (withReport) {
+		if (midi_handler.isMidiOpen()) {
+			if (withReport) {
+				compareResultCombined = 0;
+				compareResultTimeoutsCombined = false;
+				compareSysexToConfigLast = false;
+				commsStateLabel.setBackground(Color.YELLOW);
+				commsStateLabel.setText("SysEx Wait");
+			}
+			withReportInTask = withReport;
+			Thread t = new Thread(new Runnable() {
+	            public void run() {
+	                // since we're not on the EDT,
+	                // let's put the setVisible-code
+	                // into the Event Dispatching Queue
+	                SwingUtilities.invokeLater( new Runnable() {
+	                    public void run() {
+	                    	sendAllCurvesInThisThread(withReportInTask);
+	                   }
+	                });
+	            }
+	
+			});
+	        t.setPriority( Thread.NORM_PRIORITY );
+	        t.run();
+		}
+	}
+
+	private void getAll() {
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = false;
+			getGlobalMisc();
+			getMisc();
+			getPedal();
+			getAllPads();
+			getAllCurves();
+			getAllCustomNames();
+			getAllConfigNames();
+		}
+	}
+	
+	private void sendAll() {
+		if (midi_handler.isMidiOpen()) {
+			compareSysexToConfigIsOn = true;
 			compareResultCombined = 0;
 			compareResultTimeoutsCombined = false;
 			compareSysexToConfigLast = false;
 			commsStateLabel.setBackground(Color.YELLOW);
 			commsStateLabel.setText("SysEx Wait");
-		}
-		withReportInTask = withReport;
-		Thread t = new Thread(new Runnable() {
-            public void run() {
-                // since we're not on the EDT,
-                // let's put the setVisible-code
-                // into the Event Dispatching Queue
-                SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                    	sendAllCurvesInThisThread(withReportInTask);
-                   }
-                });
-            }
-
-		});
-        t.setPriority( Thread.NORM_PRIORITY );
-        t.run();
-	}
-
-	private void getAll() {
-		compareSysexToConfigIsOn = false;
-		getGlobalMisc();
-		getMisc();
-		getPedal();
-		getAllPads();
-		getAllCurves();
-		getAllCustomNames();
-		getAllConfigNames();
-	}
 	
-	private void sendAll() {
-		compareSysexToConfigIsOn = true;
-		compareResultCombined = 0;
-		compareResultTimeoutsCombined = false;
-		compareSysexToConfigLast = false;
-		commsStateLabel.setBackground(Color.YELLOW);
-		commsStateLabel.setText("SysEx Wait");
-
-		Thread t = new Thread(new Runnable() {
-            public void run() {
-                // since we're not on the EDT,
-                // let's put the setVisible-code
-                // into the Event Dispatching Queue
-                SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                		sendMisc(false);
-                    	while (compareSysexToConfigIsOn) {
-                    		delayMs(2);
-                    	}
-                		sendGlobalMisc(false);
-                    	while (compareSysexToConfigIsOn) {
-                    		delayMs(2);
-                    	}
-                		sendAllPadsInThisThread(false);
-                		sendAllCurvesInThisThread(false);
-                		sendAllCustomNamesInThisThread(false);
-                		compareSysexToConfigLast = true;
-                		sendPedal(false);
-                    	while (compareSysexToConfigIsOn) {
-                    		delayMs(2);
-                    	}
-                    	if (delayedSaveToSlot) {
-                    		midi_handler.requestSaveToSlot(delayedSaveToSlotNumber);
-                    		setConfigCurrent(delayedSaveToSlotNumber);
-                    		//
-                    		delayedSaveToSlot = false;
-                    	}
-
-                   }
-                });
-            }
-
-		});
-        t.setPriority( Thread.NORM_PRIORITY );
-        t.run();	
+			Thread t = new Thread(new Runnable() {
+	            public void run() {
+	                // since we're not on the EDT,
+	                // let's put the setVisible-code
+	                // into the Event Dispatching Queue
+	                SwingUtilities.invokeLater( new Runnable() {
+	                    public void run() {
+	                		sendMisc(false);
+	                    	while (compareSysexToConfigIsOn) {
+	                    		delayMs(2);
+	                    	}
+	                		sendGlobalMisc(false);
+	                    	while (compareSysexToConfigIsOn) {
+	                    		delayMs(2);
+	                    	}
+	                		sendAllPadsInThisThread(false);
+	                		sendAllCurvesInThisThread(false);
+	                		sendAllCustomNamesInThisThread(false);
+	                		compareSysexToConfigLast = true;
+	                		sendPedal(false);
+	                    	while (compareSysexToConfigIsOn) {
+	                    		delayMs(2);
+	                    	}
+	                    	if (delayedSaveToSlot) {
+	                    		midi_handler.requestSaveToSlot(delayedSaveToSlotNumber);
+	                    		setConfigCurrent(delayedSaveToSlotNumber);
+	                    		//
+	                    		delayedSaveToSlot = false;
+	                    	}
+	
+	                   }
+	                });
+	            }
+	
+			});
+	        t.setPriority( Thread.NORM_PRIORITY );
+	        t.run();
+		}
 	}
 
 	private void copyConfigToLastConfigNotNeeded() {
