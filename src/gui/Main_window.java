@@ -1,7 +1,6 @@
 package gui;
 
 import java.awt.EventQueue;
-
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.JDialog;
@@ -209,7 +208,6 @@ public class Main_window {
 	//private int configPointer = 0;
 	//private String [] configsStrings;
 	
-
 	
 	/**
 	 * Launch the application.
@@ -612,6 +610,7 @@ public class Main_window {
 		});
 		controlsMisc.getBtnSend().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				sysexTimedOut = false;
 				sendMisc(true);
 			}
 		});
@@ -1115,15 +1114,15 @@ public class Main_window {
 		panel.setLayout(new FormLayout(new ColumnSpec[] {
 				FormSpecs.RELATED_GAP_COLSPEC,
 				FormSpecs.DEFAULT_COLSPEC,
-				ColumnSpec.decode("2dlu"),
+				FormSpecs.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("50dlu"),
 				FormSpecs.RELATED_GAP_COLSPEC,
 				FormSpecs.DEFAULT_COLSPEC,
-				ColumnSpec.decode("2dlu"),
+				FormSpecs.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("64px"),
 				FormSpecs.RELATED_GAP_COLSPEC,
 				FormSpecs.DEFAULT_COLSPEC,
-				ColumnSpec.decode("2dlu"),
+				FormSpecs.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("50dlu"),
 				FormSpecs.RELATED_GAP_COLSPEC,
 				FormSpecs.DEFAULT_COLSPEC,
@@ -1132,7 +1131,7 @@ public class Main_window {
 				FormSpecs.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("66dlu"),
 				FormSpecs.RELATED_GAP_COLSPEC,
-				ColumnSpec.decode("left:default"),},
+				ColumnSpec.decode("100dlu"),},
 			new RowSpec[] {
 				RowSpec.decode("default:grow"),
 				FormSpecs.RELATED_GAP_ROWSPEC,
@@ -1257,6 +1256,7 @@ public class Main_window {
 				} else {
 					configFull.configGlobalMisc.lcd_contrast = (Integer)spinnerLCDcontrast.getValue();
 					if (configOptions.interactive) {
+						sysexTimedOut = false;
 						sendGlobalMisc(true);
 					}
 				}
@@ -1275,6 +1275,7 @@ public class Main_window {
 				} else {
 					configFull.configGlobalMisc.config_names_en = chckbxConfignamesen.isSelected();					
 					if (configOptions.interactive) {
+						sysexTimedOut = false;
 						sendGlobalMisc(true);
 					}
 				}
@@ -1296,6 +1297,7 @@ public class Main_window {
 				} else {
 					configFull.configGlobalMisc.custom_names_en = chckbxCustomPadsNames.isSelected();
 					if (configOptions.interactive) {
+						sysexTimedOut = false;
 						sendGlobalMisc(true);
 					}
 				}
@@ -1314,6 +1316,7 @@ public class Main_window {
 				} else {
 					configFull.configGlobalMisc.midi2_for_sysex = chckbxMidi2ForSysex.isSelected();
 					if (configOptions.interactive) {
+						sysexTimedOut = false;
 						sendGlobalMisc(true);
 					}
 				}
@@ -1417,7 +1420,7 @@ public class Main_window {
 		btnSend.setMargin(new Insets(1, 0, 1, 0));
 		btnSend.setFont(new Font("Tahoma", Font.PLAIN, 9));
 		tglbtnLiveUpdates.setMargin(new Insets(1, 1, 1, 1));
-		panel.add(tglbtnLiveUpdates, "20, 3");
+		panel.add(tglbtnLiveUpdates, "20, 3, left, default");
 		comboBox_inputsCount.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
 		        if (arg0.getStateChange() == ItemEvent.SELECTED) {
@@ -1643,6 +1646,12 @@ public class Main_window {
 			compareSysexToConfigIsOn = false;
 			compareResultCombined = 1;
 	    }
+	}
+	
+	private void setSysexOk() {
+		commsStateLabel.setVisible(true);
+		commsStateLabel.setBackground(Color.GREEN);
+		commsStateLabel.setText(Constants.SYSEX_OK_TEXT);					
 	}
 	
 	private void startSysexWaitTimer(int ms) {
@@ -2162,7 +2171,7 @@ public class Main_window {
 
 	private void sendAllPads(boolean withReport) {
 		if (midi_handler.isMidiOpen()) {
-			progressBar.setVisible(true);
+			//progressBar.setVisible(true);
 			sendWithReport(withReport);
 			if (withReport) {
 				compareResultCombined = 0;
@@ -2790,6 +2799,7 @@ public class Main_window {
 						Utils.copySysexToConfigMisc(midi_handler.bufferIn, moduleConfigFull.configMisc);
 						configFull.configMisc.syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.configMisc.sysexReceived = true;
+						setSysexOk();
 						controlsMisc.updateControls();
 						break;
 					case Constants.MD_SYSEX_PEDAL:
@@ -2797,6 +2807,7 @@ public class Main_window {
 						Utils.copySysexToConfigPedal(midi_handler.bufferIn, moduleConfigFull.configPedal);
 						configFull.configPedal.syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.configPedal.sysexReceived = true;
+						setSysexOk();
 						controlsPedal.updateControls();
 						break;
 					case Constants.MD_SYSEX_PAD:
@@ -2804,6 +2815,7 @@ public class Main_window {
 						Utils.copySysexToConfigPad(midi_handler.bufferIn, moduleConfigFull.configPads[buffer[4] - 1]);
 						configFull.configPads[buffer[4] - 1].syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.configPads[buffer[4] - 1].sysexReceived = true;
+						setSysexOk();
 						controlsPads.updateControls();
 						break;
 					case Constants.MD_SYSEX_POS:
@@ -2816,6 +2828,7 @@ public class Main_window {
 						Utils.copySysexToConfigPos(midi_handler.bufferIn, configFull.configPos[id]);
 						Utils.copySysexToConfigPos(midi_handler.bufferIn, moduleConfigFull.configPos[id]);
 						configFull.configPos[id].sysexReceived = true;
+						setSysexOk();
 						controlsPads.updateControls();
 						break;
 					case Constants.MD_SYSEX_3RD:
@@ -2823,6 +2836,7 @@ public class Main_window {
 						Utils.copySysexToConfig3rd(midi_handler.bufferIn, moduleConfigFull.config3rds[buffer[4]]);
 						configFull.config3rds[buffer[4]].syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.config3rds[buffer[4]].sysexReceived = true;
+						setSysexOk();
 						controlsPads.updateControls();
 						break;
 					case Constants.MD_SYSEX_VERSION:
@@ -2836,8 +2850,7 @@ public class Main_window {
 							}
 							configOptions.version = ver;
 							lblVersion.setText(((Integer)ver).toString());
-							commsStateLabel.setText(Constants.SYSEX_OK_TEXT);
-							commsStateLabel.setBackground(Color.GREEN);
+							setSysexOk();
 							if (ver < Constants.MD_MINIMUM_VERSION) {
 								if (!versionWarningAlreadyShown) {
 									versionWarningAlreadyShown = true;
@@ -2864,6 +2877,7 @@ public class Main_window {
 						Utils.copySysexToConfigCurve(midi_handler.bufferIn, moduleConfigFull.configCurves[buffer[4]]);
 						configFull.configCurves[buffer[4]].syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.configCurves[buffer[4]].sysexReceived = true;
+						setSysexOk();
 						controlsPadsExtra.updateControls();
 						break;
 					case Constants.MD_SYSEX_CUSTOM_NAME:
@@ -2871,12 +2885,14 @@ public class Main_window {
 						Utils.copySysexToConfigCustomName(midi_handler.bufferIn, moduleConfigFull.configCustomNames[buffer[4]]);
 						configFull.configCustomNames[buffer[4]].syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.configCustomNames[buffer[4]].sysexReceived = true;
+						setSysexOk();
 						controlsPadsExtra.updateControls();
 						break;
 					case Constants.MD_SYSEX_CONFIG_NAME:
 						Utils.copySysexToConfigConfigName(midi_handler.bufferIn, configFull.configConfigNames[buffer[4]]);
 						Utils.copySysexToConfigConfigName(midi_handler.bufferIn, moduleConfigFull.configConfigNames[buffer[4]]);
 						configFull.configConfigNames[buffer[4]].sysexReceived = true;
+						setSysexOk();
 						if (buffer[4] < configFull.configNamesCount) {
 							menuItemsSaveToSlot[buffer[4]].setText(((Integer)(buffer[4]+1)).toString() + " " + configFull.configConfigNames[buffer[4]].name);
 							popupMenuItemsSaveToSlot[buffer[4]].setText(((Integer)(buffer[4]+1)).toString() + " " + configFull.configConfigNames[buffer[4]].name);
@@ -2892,6 +2908,7 @@ public class Main_window {
 						Utils.copySysexToConfigGlobalMisc(midi_handler.bufferIn, moduleConfigFull.configGlobalMisc);
 						configFull.configGlobalMisc.syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.configGlobalMisc.sysexReceived = true;
+						setSysexOk();
 						int c = comboBox_inputsCount.getSelectedIndex();
 						comboBox_inputsCount.setSelectedIndexWithoutEvent((configFull.configGlobalMisc.inputs_count - Constants.MIN_INPUTS)/2);
 						if (comboBox_inputsCount.getSelectedIndex() != c) {
@@ -2923,8 +2940,7 @@ public class Main_window {
 							if (configOptions.mcuType < Constants.MCU_TYPES.length ) {
 								lblMCU.setText(Constants.MCU_TYPES[configOptions.mcuType]);								
 							}
-							commsStateLabel.setText(Constants.SYSEX_OK_TEXT);
-							commsStateLabel.setBackground(Color.GREEN);
+							setSysexOk();
 						}
 						break;
 					case Constants.MD_SYSEX_CONFIG_COUNT:
@@ -2932,8 +2948,8 @@ public class Main_window {
 							int b;
 							b = (int)buffer[4];
 							lblCfgSlotsNr.setText(((Integer)b).toString());
-							commsStateLabel.setText(Constants.SYSEX_OK_TEXT);
-							commsStateLabel.setBackground(Color.GREEN);
+							configFull.configCountSysexReceived = true;
+							setSysexOk();
 							popupMenuSaveToSlot.removeAll();
 							mntmSaveToMd.removeAll();
 							popupMenuLoadFromSlot.removeAll();
@@ -2945,18 +2961,16 @@ public class Main_window {
 								mntmLoadFromMd.add(menuItemsLoadFromSlot[i]);
 							}
 						}
-						configFull.configCountSysexReceived = true;
 						break;
 					case Constants.MD_SYSEX_CONFIG_CURRENT:
 						if (buffer.length >= Constants.MD_SYSEX_CONFIG_CURRENT_SIZE) {
 							int b;
 							b = (int)buffer[4];
 							setConfigCurrent(b);
-							commsStateLabel.setText(Constants.SYSEX_OK_TEXT);
-							commsStateLabel.setBackground(Color.GREEN);
+							configFull.configCurrentSysexReceived = true;
+							setSysexOk();
 							//popupMenuSaveToSlot.removeAll();
 						}
-						configFull.configCurrentSysexReceived = true;
 						break;
 					default:
 						break;
