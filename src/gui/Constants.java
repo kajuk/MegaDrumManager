@@ -179,4 +179,7 @@ public interface Constants {
 			"3. Click button Start.\n" +
 			"4. Wait for the upgrade to finish.\n" +
 			"5. Click button Close.";
+	public static final String SYSEX_TIMEOUT_TEXT = "Sysex Timeout";
+	public static final String SYSEX_OK_TEXT = "Sysex Ok";
+	public static final String MIDI_IS_NOT_OPEN = "MIDI is not open";
 }
