@@ -52,6 +52,7 @@ public class Upgrade extends JDialog {
 	ExecutorService backgroundExec = Executors.newCachedThreadPool();
 	Future<?>  midiTask = null;
 	private JTextPane txtInstruction;
+	public boolean reOpenMidi = false;
 	
 	
 	/**
@@ -183,9 +184,10 @@ public class Upgrade extends JDialog {
 				btnCancel.setEnabled(false);
 				setVisible(false);
 				if (midi_handler.isMidiOpen()) {
-					midi_handler.closeAllPorts();
-					midi_handler.initPorts();
-					midi_handler.requestVersionAndMcu();
+					reOpenMidi = true;
+					//midi_handler.closeAllPorts();
+					//midi_handler.initPorts();
+					//midi_handler.requestVersionAndMcu();
 				}
 			}
 		});

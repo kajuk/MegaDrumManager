@@ -499,8 +499,12 @@ public class Main_window {
 			public void actionPerformed(ActionEvent arg0) {
 				upgradeDialog.setConfigOptions(configOptions);
 				midi_handler.getMidiBlocked = true;
+				upgradeDialog.reOpenMidi = false;
 				upgradeDialog.setVisible(true);
 				midi_handler.getMidiBlocked = false;
+				if (upgradeDialog.reOpenMidi) {
+					toggleMidiOpenButton();
+				}
 			}
 		});
 		mnMain.add(mntmFirmwareUpgrade);
@@ -2708,11 +2712,11 @@ public class Main_window {
 	
 	private void toggleMidiOpenButton() {
 		if (midi_handler.isMidiOpen()) {
+			sysexTimedOut = false;
 			tglbtnMidi.setText("Close MIDI");
 			tglbtnMidi.setSelected(true);
 			versionWarningAlreadyShown = false;
 			midi_handler.requestVersionAndMcu();
-			sysexTimedOut = false;
 		} else {
 			tglbtnMidi.setText("Open MIDI");
 			tglbtnMidi.setSelected(false);
@@ -2791,6 +2795,7 @@ public class Main_window {
 	}
 	
 	private void decodeSysex(byte [] buffer) {
+		if (sysexTimedOut) return;
 		if (buffer[1] == Constants.MD_SYSEX) {
 			if (buffer[2] == (byte) configOptions.chainId) {
 				switch (buffer[3]) {
