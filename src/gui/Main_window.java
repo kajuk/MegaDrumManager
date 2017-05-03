@@ -1697,7 +1697,7 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configPedal.sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PEDAL_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PEDAL_SIZE/2);
 				midi_handler.requestConfigPedal();
 				while ((delayCounter > 0) && (!configFull.configPedal.sysexReceived)) {
 					delayMs(1);
@@ -1747,7 +1747,7 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configGlobalMisc.sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_GLOBAL_MISC_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_GLOBAL_MISC_SIZE/2);
 				midi_handler.requestConfigGlobalMisc();					
 				while ((delayCounter > 0) && (!configFull.configGlobalMisc.sysexReceived)) {
 					delayMs(1);
@@ -1760,7 +1760,7 @@ public class Main_window {
 					if (configFull.configGlobalMisc.config_names_en) {
 						compareSysexToConfigIsOn = false;
 						configFull.configNameSysexReceived = false;
-						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/3);
+						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/2);
 						midi_handler.requestConfigConfigName(configFull.configCurrent);								
 						while ((delayCounter > 0) && (!configFull.configNameSysexReceived)) {
 							delayMs(1);
@@ -1782,7 +1782,7 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configCountSysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_COUNT_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_COUNT_SIZE/2);
 				midi_handler.requestConfigCount();					
 				while ((delayCounter > 0) && (!configFull.configCountSysexReceived)) {
 					delayMs(1);
@@ -1793,7 +1793,7 @@ public class Main_window {
 				} else {
 					compareSysexToConfigIsOn = false;
 					configFull.configCurrentSysexReceived = false;
-					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_CURRENT_SIZE/3);
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_CURRENT_SIZE/2);
 					midi_handler.requestConfigCurrent();					
 					while ((delayCounter > 0) && (!configFull.configCurrentSysexReceived)) {
 						delayMs(1);
@@ -1838,12 +1838,14 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configMisc.sysexReceived = false;
+				//delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_MISC_SIZE/3);
 				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_MISC_SIZE/3);
 				midi_handler.requestConfigMisc();					
 				while ((delayCounter > 0) && (!configFull.configMisc.sysexReceived)) {
 					delayMs(1);
 					delayCounter--;
 				}
+				delayMs(30);
 				if (!configFull.configMisc.sysexReceived) getTimedOut();
 			} else {
 				midiIsNotOpen();
@@ -1878,7 +1880,7 @@ public class Main_window {
 				int delayCounter;
 				if ( pad_id > 0 ) {
 					configFull.configPads[pad_id].sysexReceived = false;
-					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/3);
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
 					midi_handler.requestConfigPad(pad_id + 1);
 					while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
 						delayMs(1);
@@ -1888,7 +1890,7 @@ public class Main_window {
 						getTimedOut();
 					} else {
 						configFull.configPads[pad_id + 1].sysexReceived = false;
-						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/3);
+						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
 						midi_handler.requestConfigPad(pad_id + 2);
 						while ((delayCounter > 0) && (!configFull.configPads[pad_id + 1].sysexReceived)) {
 							delayMs(1);
@@ -1898,7 +1900,7 @@ public class Main_window {
 							getTimedOut();
 						} else {
 							configFull.configPos[pad_id].sysexReceived = false;
-							delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/3);
+							delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
 							midi_handler.requestConfigPos(pad_id);
 							while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
 								delayMs(1);
@@ -1908,7 +1910,7 @@ public class Main_window {
 								getTimedOut();
 							} else {
 								configFull.configPos[pad_id + 1].sysexReceived = false;
-								delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/3);
+								delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
 								midi_handler.requestConfigPos(pad_id + 1);
 								while ((delayCounter > 0) && (!configFull.configPos[pad_id + 1].sysexReceived)) {
 									delayMs(1);
@@ -1918,7 +1920,7 @@ public class Main_window {
 									getTimedOut();
 								} else {
 									configFull.config3rds[(pad_id - 1)/2].sysexReceived = false;
-									delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/3);
+									delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
 									midi_handler.requestConfig3rd((pad_id - 1)/2);
 									while ((delayCounter > 0) && (!configFull.config3rds[(pad_id - 1)/2].sysexReceived)) {
 										delayMs(1);
@@ -1931,7 +1933,7 @@ public class Main_window {
 					}					
 				} else {
 					configFull.configPads[0].sysexReceived = false;
-					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/3);
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
 					midi_handler.requestConfigPad(1);
 					while ((delayCounter > 0) && (!configFull.configPads[0].sysexReceived)) {
 						delayMs(1);
@@ -1941,7 +1943,7 @@ public class Main_window {
 						getTimedOut();
 					} else {
 						configFull.configPos[0].sysexReceived = false;
-						delayCounter = configOptions.sysexDelay + + (Constants.MD_SYSEX_POS_SIZE/3);
+						delayCounter = configOptions.sysexDelay + + (Constants.MD_SYSEX_POS_SIZE/2);
 						midi_handler.requestConfigPos(0);
 						while ((delayCounter > 0) && (!configFull.configPos[0].sysexReceived)) {
 							delayMs(1);
@@ -1962,7 +1964,7 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configPads[pad_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
 				midi_handler.requestConfigPad(pad_id + 1);
 				while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
 					delayMs(1);
@@ -1972,7 +1974,7 @@ public class Main_window {
 					getTimedOut();
 				} else {
 					configFull.configPos[pad_id].sysexReceived = false;
-					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/3);
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
 					midi_handler.requestConfigPos(pad_id);
 					while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
 						delayMs(1);
@@ -1993,7 +1995,7 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.config3rds[pad_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
 				midi_handler.requestConfig3rd(pad_id);
 				while ((delayCounter > 0) && (!configFull.config3rds[pad_id].sysexReceived)) {
 					delayMs(1);
@@ -2210,7 +2212,7 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configCustomNames[name_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CUSTOM_NAME_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CUSTOM_NAME_SIZE/2);
 				midi_handler.requestConfigCustomName(name_id);
 				while ((delayCounter > 0) && (!configFull.configCustomNames[name_id].sysexReceived)) {
 					delayMs(1);
@@ -2229,7 +2231,7 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configConfigNames[name_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/2);
 				midi_handler.requestConfigConfigName(name_id);
 				while ((delayCounter > 0) && (!configFull.configConfigNames[name_id].sysexReceived)) {
 					delayMs(1);
@@ -2351,7 +2353,7 @@ public class Main_window {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configCurves[curve_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CURVE_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CURVE_SIZE/2);
 				midi_handler.requestConfigCurve(curve_id);
 				while ((delayCounter > 0) && (!configFull.configCurves[curve_id].sysexReceived)) {
 					delayMs(1);
