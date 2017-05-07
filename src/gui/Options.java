@@ -381,9 +381,13 @@ public class Options extends JDialog {
 	}
 	
 	public void rescanMidiPorts() {
+		//midi_handler.closeAllPorts();
+		//midi_handler.init();
+		//midi_handler.initPorts();
 		fillInPorts(midi_handler.getMidiInList());
 		fillOutPorts(midi_handler.getMidiOutList());
-		fillThruPorts(midi_handler.getMidiOutList());		
+		fillThruPorts(midi_handler.getMidiOutList());	
+		updateControls();
 	}
 
 }

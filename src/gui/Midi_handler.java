@@ -62,6 +62,10 @@ public class Midi_handler {
 
 	  public Midi_handler (ConfigOptions config) {
 		configOptions = config;
+		init();
+	}
+	
+	public void init() {
 		midiin = null;
 		midiout = null;
 		midithru = null;
@@ -69,6 +73,7 @@ public class Midi_handler {
 		thruReceiver = null;
 		transmitter = null;
 		chainId = 0;
+		dump_receiver = null;
 		dump_receiver = new DumpReceiver();
 		dump_receiver.addMidiEventListener(new MidiEventListener() {
 			@Override
@@ -78,7 +83,7 @@ public class Midi_handler {
 		});
 		getMidiBlocked = false;
 		bufferIn = null;
-		sysexReceived = false;
+		sysexReceived = false;		
 	}
 	
 	public void closeAllPorts() {
