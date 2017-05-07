@@ -132,10 +132,10 @@ public class Midi_handler {
 			if (midiout.isOpen()) {
 				//System.out.printf("midiout is open\n");
 				SysexMessage	sysexMessage = new SysexMessage();
-				midiout.close();
+				//midiout.close();
 				//System.out.printf("midiout closed\n");
 		    	try {
-					midiout.open();
+					//midiout.open();
 					//System.out.printf("midiout re-opened\n");
 					receiver = midiout.getReceiver();
 					//System.out.printf("midiout provded receiver\n");
