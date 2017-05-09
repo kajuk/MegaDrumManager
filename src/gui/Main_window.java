@@ -1641,7 +1641,7 @@ public class Main_window {
 		updateAllControls();
 
 	}
-	
+
 	class sysexTimerTask extends TimerTask {
 	    public void run() {
 	    	// Timer expired and Sysex has not been received
@@ -1685,6 +1685,7 @@ public class Main_window {
 		commsStateLabel.setBackground(Color.RED);
 		commsStateLabel.setText("Get " + timeoutSource);
 		sysexTimedOut = true;
+	    System.out.print("Sysex timed out\n");
 	}
 	
 	private void midiIsNotOpen() {
@@ -1711,6 +1712,25 @@ public class Main_window {
 			}
 		}
 	}
+	
+	private void getPedal() {
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getPedalThisThread();
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+	
 	
 	private void sendWithReport(boolean withReport) {
 		if (withReport) {
@@ -1743,7 +1763,26 @@ public class Main_window {
 			}
 		}
 	}
-	
+
+	private void sendPedal(boolean withReport) {
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendPedalThisThread(withReportInTask);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+
 	private void getGlobalMiscThisThread() {
 		int delayCounter;
 		if (!sysexTimedOut) {
@@ -1779,6 +1818,23 @@ public class Main_window {
 		}
 	}
 
+	private void getGlobalMisc() {
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getGlobalMiscThisThread();
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
 
 	private void getReadOnlyDataThisThread() {
 		int delayCounter;
@@ -1829,7 +1885,7 @@ public class Main_window {
 		    	}
 		    	if (configFull.configNameChanged) {
 		    		configFull.configNameChanged = false;
-		    		sendConfigName(configFull.configCurrent, withReport);
+		    		sendConfigNameThisThread(configFull.configCurrent, withReport);
 		    	}
 		    	getGlobalMiscThisThread();
 		    	getReadOnlyDataThisThread();
@@ -1837,6 +1893,25 @@ public class Main_window {
 				midiIsNotOpen();
 			}
 		}
+	}
+
+	private void sendGlobalMisc(boolean withReport) {
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendGlobalMiscThisThread(withReportInTask);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
 	}
 
 	private void getMiscThisThread() {
@@ -1858,6 +1933,24 @@ public class Main_window {
 				midiIsNotOpen();
 			}
 		}
+	}
+
+	private void getMisc(){
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getMiscThisThread();
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();
 	}
 	
 	private void sendMiscThisThread(boolean withReport) {
@@ -1881,7 +1974,24 @@ public class Main_window {
 		}
 	}
 	
-	int thread_pad_id;
+	private void sendMisc(boolean withReport){
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendMiscThisThread(withReportInTask);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();
+	}
 	
 	private void getPadThisThread(int pad_id) {
 		if (!sysexTimedOut) {
@@ -1890,6 +2000,7 @@ public class Main_window {
 				int delayCounter;
 				if ( pad_id > 0 ) {
 					configFull.configPads[pad_id].sysexReceived = false;
+				    System.out.printf("sysexReceived for pad id %d set to false\n", pad_id);
 					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
 					midi_handler.requestConfigPad(pad_id + 1);
 					while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
@@ -1943,6 +2054,7 @@ public class Main_window {
 					}					
 				} else {
 					configFull.configPads[0].sysexReceived = false;
+				    System.out.printf("sysexReceived for pad id %d set to false\n", 0);
 					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
 					midi_handler.requestConfigPad(1);
 					while ((delayCounter > 0) && (!configFull.configPads[0].sysexReceived)) {
@@ -1950,22 +2062,47 @@ public class Main_window {
 						delayCounter--;
 					}
 					if (!configFull.configPads[0].sysexReceived) {
+					    System.out.printf("sysexReceived for pad id %d is still false\n", 0);
 						getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
 					} else {
 						configFull.configPos[0].sysexReceived = false;
+					    System.out.printf("sysexReceived for Positional id %d set to false\n", 0);
 						delayCounter = configOptions.sysexDelay + + (Constants.MD_SYSEX_POS_SIZE/2);
 						midi_handler.requestConfigPos(0);
 						while ((delayCounter > 0) && (!configFull.configPos[0].sysexReceived)) {
 							delayMs(1);
 							delayCounter--;
 						}
-						if (!configFull.configPos[0].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
+						if (!configFull.configPos[0].sysexReceived) {
+						    System.out.printf("sysexReceived for Positional id %d is still false\n", 0);
+							getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
+						}
 					}					
 				}
 			} else {
 				midiIsNotOpen();
 			}
 		}
+	}
+
+	private void getPad(int pad_id) {
+		final int thread_pad_id = pad_id;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getPadThisThread(thread_pad_id);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.start();
+	    System.out.print("getPad thread started\n");
 	}
 	
 	private void getPadOneZoneThisThread(int pad_id) {
@@ -2063,6 +2200,26 @@ public class Main_window {
 			}
 		}
 	}
+
+	private void sendPadOneZone(int pad_id, boolean withReport) {
+		final int thread_pad_id = pad_id;
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendPadOneZoneThisThread(thread_pad_id, withReportInTask);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
 	
 	private void sendThirdZoneThisThread(int pad_id, boolean withReport) {
 		byte [] sysex3rd = new byte[Constants.MD_SYSEX_3RD_SIZE];
@@ -2087,6 +2244,26 @@ public class Main_window {
 		}
 	}
 
+	private void sendThirdZone(int pad_id, boolean withReport) {
+		final int thread_pad_id = pad_id;
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendThirdZoneThisThread(thread_pad_id, withReportInTask);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+
 	private void sendPadThisThread(int pad_id, boolean withReport) {
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
@@ -2109,6 +2286,26 @@ public class Main_window {
 				midiIsNotOpen();
 			}
 		}
+	}
+	
+	private void sendPad(int pad_id, boolean withReport) {
+		final int thread_pad_id = pad_id;
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendPadThisThread(thread_pad_id, withReportInTask);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
 	}
 	
 	private void getAllPadsThisThread() {
@@ -2245,7 +2442,26 @@ public class Main_window {
 			}
 		}
 	}
-		
+
+	private void getCustomName(int name_id) {
+		final int thread_name_id = name_id;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getCustomNameThisThread(thread_name_id);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+
 	private void getConfigNameThisThread(int name_id) {
 		int delayCounter;
 		if (!sysexTimedOut) {
@@ -2286,6 +2502,26 @@ public class Main_window {
 		}
 	}
 
+	private void sendCustomName(int name_id, boolean withReport) {
+		final int thread_name_id = name_id;
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendCustomNameThisThread(thread_name_id, withReportInTask);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+	
 	private void sendConfigNameThisThread(int name_id, boolean withReport) {
 		byte [] sysexConfigName = new byte[Constants.MD_SYSEX_CONFIG_NAME_SIZE];
 		if (!sysexTimedOut) {
@@ -2305,7 +2541,27 @@ public class Main_window {
 			}
 		}
 	}
+/*
+	private void sendConfigName(int name_id, boolean withReport) {
+		final int thread_name_id = name_id;
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendConfigNameThisThread(thread_name_id, withReportInTask);
+	               }
+	            });
+	        }
 
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+*/	
 	private void getAllCustomNamesThisThread() {
 		if (midi_handler.isMidiOpen()) {
 			compareSysexToConfigIsOn = false;
@@ -2316,7 +2572,25 @@ public class Main_window {
 			midiIsNotOpen();
 		}
 	}
-		
+
+	private void getAllCustomNames() {
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getAllCustomNamesThisThread();
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+
 	private void getAllConfigNamesThisThread() {
 		if (midi_handler.isMidiOpen()) {
 			if (configFull.configGlobalMisc.config_names_en) {
@@ -2389,6 +2663,25 @@ public class Main_window {
 		}
 	}
 
+	private void getCurve(int curve_id) {
+		final int thread_curve_id = curve_id;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getCurveThisThread(thread_curve_id);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+	
 	private void sendCurveThisThread(int curve_id, boolean withReport) {
 		byte [] sysexCurve = new byte[Constants.MD_SYSEX_CURVE_SIZE];
 		if (!sysexTimedOut) {
@@ -2409,6 +2702,26 @@ public class Main_window {
 			}
 		}
 	}
+
+	private void sendCurve(int curve_id, boolean withReport) {
+		final int thread_curve_id = curve_id;
+		withReportInTask = withReport;
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	sendCurveThisThread(thread_curve_id, withReportInTask);
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
 	
 	private void getAllCurvesThisThread() {
 		if (midi_handler.isMidiOpen()) {
@@ -2420,7 +2733,25 @@ public class Main_window {
 			midiIsNotOpen();
 		}
 	}
-		
+
+	private void getAllCurves() {
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getAllCurvesThisThread();
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();		
+	}
+	
 	private void sendAllCurvesThisThread(boolean withReport) {
 		if (midi_handler.isMidiOpen()) {
 			for (int i = 0; i < (Constants.CURVES_COUNT - 1); i++) {
@@ -2461,7 +2792,7 @@ public class Main_window {
 			midiIsNotOpen();
 		}
 	}
-
+	
 	private void getAllThisThread() {
 		if (midi_handler.isMidiOpen()) {
 			compareSysexToConfigIsOn = false;
@@ -2475,6 +2806,24 @@ public class Main_window {
 		} else {
 			midiIsNotOpen();
 		}
+	}
+
+	private void getAll() {
+		Thread t = new Thread(new Runnable() {
+	        public void run() {
+	            // since we're not on the EDT,
+	            // let's put the setVisible-code
+	            // into the Event Dispatching Queue
+	            SwingUtilities.invokeLater( new Runnable() {
+	                public void run() {
+	                	getAllThisThread();
+	               }
+	            });
+	        }
+
+		});
+	    t.setPriority( Thread.NORM_PRIORITY );
+	    t.run();
 	}
 	
 	private void sendAll() {
@@ -2492,22 +2841,13 @@ public class Main_window {
 	                // into the Event Dispatching Queue
 	                SwingUtilities.invokeLater( new Runnable() {
 	                    public void run() {
-	                		sendMisc(false);
-	                    	while (compareSysexToConfigIsOn) {
-	                    		delayMs(2);
-	                    	}
-	                		sendGlobalMisc(false);
-	                    	while (compareSysexToConfigIsOn) {
-	                    		delayMs(2);
-	                    	}
+	                		sendMiscThisThread(false);
+	                		sendGlobalMiscThisThread(false);
 	                		sendAllPadsThisThread(false);
 	                		sendAllCurvesThisThread(false);
 	                		sendAllCustomNamesThisThread(false);
 	                		compareSysexToConfigLast = true;
-	                		sendPedal(false);
-	                    	while (compareSysexToConfigIsOn) {
-	                    		delayMs(2);
-	                    	}
+	                		sendPedalThisThread(false);
 	                    	if (delayedSaveToSlot) {
 	                    		midi_handler.requestSaveToSlot(delayedSaveToSlotNumber);
 	                    		setConfigCurrent(delayedSaveToSlotNumber);
@@ -2823,6 +3163,7 @@ public class Main_window {
 	
 	private void decodeSysex(byte [] buffer) {
 		//if (sysexTimedOut) return;
+	    System.out.print("Decoding received Sysex\n");
 		if (buffer[1] == Constants.MD_SYSEX) {
 			if (buffer[2] == (byte) configOptions.chainId) {
 				switch (buffer[3]) {
@@ -2847,6 +3188,7 @@ public class Main_window {
 						Utils.copySysexToConfigPad(midi_handler.bufferIn, moduleConfigFull.configPads[buffer[4] - 1]);
 						configFull.configPads[buffer[4] - 1].syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.configPads[buffer[4] - 1].sysexReceived = true;
+					    System.out.printf("sysexReceived for pad id %d set to true\n", buffer[4] - 1);
 						setSysexOk();
 						controlsPads.updateControls();
 						break;
@@ -2860,6 +3202,7 @@ public class Main_window {
 						Utils.copySysexToConfigPos(midi_handler.bufferIn, configFull.configPos[id]);
 						Utils.copySysexToConfigPos(midi_handler.bufferIn, moduleConfigFull.configPos[id]);
 						configFull.configPos[id].sysexReceived = true;
+					    System.out.printf("sysexReceived for Positional id %d set to true\n", id);
 						setSysexOk();
 						controlsPads.updateControls();
 						break;
