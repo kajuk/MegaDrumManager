@@ -205,6 +205,7 @@ public class Main_window {
 	private Timer sysexWaitTimer;
 	private JTextField configNameTextField;
 	private JLabel lblOk;
+	private String currentSysexSendTimeoutString = "";
 	//private int configPointer = 0;
 	//private String [] configsStrings;
 	
@@ -1645,7 +1646,7 @@ public class Main_window {
 	    public void run() {
 	    	// Timer expired and Sysex has not been received
 			commsStateLabel.setBackground(Color.RED);
-			commsStateLabel.setText(Constants.SYSEX_TIMEOUT_TEXT);
+			commsStateLabel.setText("Send " + currentSysexSendTimeoutString);
 			sysexWaitTimer.cancel();
 			compareSysexToConfigIsOn = false;
 			compareResultCombined = 1;
@@ -1670,6 +1671,7 @@ public class Main_window {
 	private void delayMs(int delay) {
 		try {
 			Thread.sleep(delay);
+			//this.wait(delay);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
@@ -1678,10 +1680,10 @@ public class Main_window {
 			System.exit(1);
 		}
 	}
-	private void getTimedOut() {
+	private void getTimedOut(String timeoutSource) {
 		commsStateLabel.setVisible(true);
 		commsStateLabel.setBackground(Color.RED);
-		commsStateLabel.setText(Constants.SYSEX_TIMEOUT_TEXT);
+		commsStateLabel.setText("Get " + timeoutSource);
 		sysexTimedOut = true;
 	}
 	
@@ -1691,7 +1693,7 @@ public class Main_window {
 		commsStateLabel.setText(Constants.MIDI_IS_NOT_OPEN);
 	}
 	
-	private void getPedal() {
+	private void getPedalThisThread() {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
@@ -1703,7 +1705,7 @@ public class Main_window {
 					delayMs(1);
 					delayCounter--;
 				}
-				if (!configFull.configPedal.sysexReceived) getTimedOut();
+				if (!configFull.configPedal.sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_PEDAL_TXT);
 			} else {
 				midiIsNotOpen();
 			}
@@ -1721,11 +1723,12 @@ public class Main_window {
 		startSysexWaitTimer(configOptions.sysexDelay*3);		
 	}
 	
-	private void sendPedal(boolean withReport) {
+	private void sendPedalThisThread(boolean withReport) {
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				byte [] sysexPedal = new byte[Constants.MD_SYSEX_PEDAL_SIZE];
 				Utils.copyConfigPedalToSysex(configFull.configPedal, sysexPedal, configOptions.chainId);
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_PEDAL_TXT;
 				midi_handler.sendSysex(sysexPedal);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_PEDAL_SIZE/3);
@@ -1734,29 +1737,30 @@ public class Main_window {
 		    	while (compareSysexToConfigIsOn) {
 		    		delayMs(2);
 		    	}
-				getPedal();
+				getPedalThisThread();
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 	
-	private void getGlobalMisc() {
+	private void getGlobalMiscThisThread() {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configGlobalMisc.sysexReceived = false;
 				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_GLOBAL_MISC_SIZE/2);
-				midi_handler.requestConfigGlobalMisc();					
+				midi_handler.requestConfigGlobalMisc();	
+				//delayMs(10);
 				while ((delayCounter > 0) && (!configFull.configGlobalMisc.sysexReceived)) {
 					delayMs(1);
 					delayCounter--;
 				}
 				if (!configFull.configGlobalMisc.sysexReceived) {
-					getTimedOut();
+					getTimedOut(Constants.SYSEX_TIMEOUT_GLOBAL_MISC_TXT);
 				} else {
-					getReadOnlyData();
+					getReadOnlyDataThisThread();
 					if (configFull.configGlobalMisc.config_names_en) {
 						compareSysexToConfigIsOn = false;
 						configFull.configNameSysexReceived = false;
@@ -1766,7 +1770,7 @@ public class Main_window {
 							delayMs(1);
 							delayCounter--;
 						}
-						if (!configFull.configNameSysexReceived) getTimedOut();
+						if (!configFull.configNameSysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_NAME_TXT);
 					}
 				}
 			} else {
@@ -1776,7 +1780,7 @@ public class Main_window {
 	}
 
 
-	private void getReadOnlyData() {
+	private void getReadOnlyDataThisThread() {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
@@ -1784,22 +1788,24 @@ public class Main_window {
 				configFull.configCountSysexReceived = false;
 				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_COUNT_SIZE/2);
 				midi_handler.requestConfigCount();					
+				//delayMs(10);
 				while ((delayCounter > 0) && (!configFull.configCountSysexReceived)) {
 					delayMs(1);
 					delayCounter--;
 				}
 				if (!configFull.configCountSysexReceived) {
-					getTimedOut();
+					getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_COUNT_TXT);
 				} else {
 					compareSysexToConfigIsOn = false;
 					configFull.configCurrentSysexReceived = false;
 					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_CURRENT_SIZE/2);
-					midi_handler.requestConfigCurrent();					
+					midi_handler.requestConfigCurrent();
+					//delayMs(10);
 					while ((delayCounter > 0) && (!configFull.configCurrentSysexReceived)) {
 						delayMs(1);
 						delayCounter--;
 					}
-					if (!configFull.configCurrentSysexReceived) getTimedOut();
+					if (!configFull.configCurrentSysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_CURRENT_TXT);
 				}		
 			} else {
 				midiIsNotOpen();
@@ -1807,11 +1813,12 @@ public class Main_window {
 		}
 	}
 
-	private void sendGlobalMisc(boolean withReport) {
+	private void sendGlobalMiscThisThread(boolean withReport) {
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				byte [] sysexGlobalMisc = new byte[Constants.MD_SYSEX_GLOBAL_MISC_SIZE];
 				Utils.copyConfigGlobalMiscToSysex(configFull.configGlobalMisc, sysexGlobalMisc, configOptions.chainId);
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_GLOBAL_MISC_TXT;
 				midi_handler.sendSysex(sysexGlobalMisc);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_GLOBAL_MISC_SIZE/3);
@@ -1824,40 +1831,41 @@ public class Main_window {
 		    		configFull.configNameChanged = false;
 		    		sendConfigName(configFull.configCurrent, withReport);
 		    	}
-		    	getGlobalMisc();
-		    	getReadOnlyData();
+		    	getGlobalMiscThisThread();
+		    	getReadOnlyDataThisThread();
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 
-	private void getMisc() {
+	private void getMiscThisThread() {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
 				configFull.configMisc.sysexReceived = false;
 				//delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_MISC_SIZE/3);
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_MISC_SIZE/3);
+				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_MISC_SIZE/2);
 				midi_handler.requestConfigMisc();					
 				while ((delayCounter > 0) && (!configFull.configMisc.sysexReceived)) {
 					delayMs(1);
 					delayCounter--;
 				}
-				delayMs(30);
-				if (!configFull.configMisc.sysexReceived) getTimedOut();
+				//delayMs(30);
+				if (!configFull.configMisc.sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_MISC_TXT);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 	
-	private void sendMisc(boolean withReport) {
+	private void sendMiscThisThread(boolean withReport) {
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				byte [] sysexMisc = new byte[Constants.MD_SYSEX_MISC_SIZE];
 				Utils.copyConfigMiscToSysex(configFull.configMisc, sysexMisc, configOptions.chainId);
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_MISC_TXT;
 				midi_handler.sendSysex(sysexMisc);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_MISC_SIZE/3);
@@ -1866,14 +1874,16 @@ public class Main_window {
 		    	while (compareSysexToConfigIsOn) {
 		    		delayMs(2);
 		    	}
-		    	getMisc();
+		    	getMiscThisThread();
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 	
-	private void getPad(int pad_id) {
+	int thread_pad_id;
+	
+	private void getPadThisThread(int pad_id) {
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				compareSysexToConfigIsOn = false;
@@ -1887,7 +1897,7 @@ public class Main_window {
 						delayCounter--;
 					}
 					if (!configFull.configPads[pad_id].sysexReceived) {
-						getTimedOut();
+						getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
 					} else {
 						configFull.configPads[pad_id + 1].sysexReceived = false;
 						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
@@ -1897,7 +1907,7 @@ public class Main_window {
 							delayCounter--;
 						}
 						if (!configFull.configPads[pad_id + 1].sysexReceived) {
-							getTimedOut();
+							getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
 						} else {
 							configFull.configPos[pad_id].sysexReceived = false;
 							delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
@@ -1907,7 +1917,7 @@ public class Main_window {
 								delayCounter--;
 							}
 							if (!configFull.configPos[pad_id].sysexReceived) {
-								getTimedOut();
+								getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
 							} else {
 								configFull.configPos[pad_id + 1].sysexReceived = false;
 								delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
@@ -1917,7 +1927,7 @@ public class Main_window {
 									delayCounter--;
 								}
 								if (!configFull.configPos[pad_id + 1].sysexReceived) {
-									getTimedOut();
+									getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
 								} else {
 									configFull.config3rds[(pad_id - 1)/2].sysexReceived = false;
 									delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
@@ -1926,7 +1936,7 @@ public class Main_window {
 										delayMs(1);
 										delayCounter--;
 									}			
-									if (!configFull.config3rds[(pad_id - 1)/2].sysexReceived) getTimedOut();
+									if (!configFull.config3rds[(pad_id - 1)/2].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_3RD_ZONE_TXT);
 								}					
 							}				
 						}						
@@ -1940,7 +1950,7 @@ public class Main_window {
 						delayCounter--;
 					}
 					if (!configFull.configPads[0].sysexReceived) {
-						getTimedOut();
+						getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
 					} else {
 						configFull.configPos[0].sysexReceived = false;
 						delayCounter = configOptions.sysexDelay + + (Constants.MD_SYSEX_POS_SIZE/2);
@@ -1949,7 +1959,7 @@ public class Main_window {
 							delayMs(1);
 							delayCounter--;
 						}
-						if (!configFull.configPos[0].sysexReceived) getTimedOut();
+						if (!configFull.configPos[0].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
 					}					
 				}
 			} else {
@@ -1958,7 +1968,7 @@ public class Main_window {
 		}
 	}
 	
-	private void getPadOneZone(int pad_id) {
+	private void getPadOneZoneThisThread(int pad_id) {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
@@ -1971,7 +1981,7 @@ public class Main_window {
 					delayCounter--;
 				}
 				if (!configFull.configPads[pad_id].sysexReceived) {
-					getTimedOut();
+					getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
 				} else {
 					configFull.configPos[pad_id].sysexReceived = false;
 					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
@@ -1980,7 +1990,7 @@ public class Main_window {
 						delayMs(1);
 						delayCounter--;
 					}
-					if (!configFull.configPos[pad_id].sysexReceived) getTimedOut();
+					if (!configFull.configPos[pad_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
 				}		
 			} else {
 				midiIsNotOpen();
@@ -1989,7 +1999,7 @@ public class Main_window {
 	}
 
 	
-	private void getThirdZone(int pad_id) {
+	private void getThirdZoneThisThread(int pad_id) {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
@@ -2001,20 +2011,21 @@ public class Main_window {
 					delayMs(1);
 					delayCounter--;
 				}
-				if (!configFull.config3rds[pad_id].sysexReceived) getTimedOut();
+				if (!configFull.config3rds[pad_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_3RD_ZONE_TXT);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 	
-	private void sendPadOneZone(int pad_id, boolean withReport) {
+	private void sendPadOneZoneThisThread(int pad_id, boolean withReport) {
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				byte [] sysexPad = new byte[Constants.MD_SYSEX_PAD_SIZE];
 				byte [] sysexPos = new byte[Constants.MD_SYSEX_POS_SIZE];
 				
 				Utils.copyConfigPadToSysex(configFull.configPads[pad_id], sysexPad, configOptions.chainId, pad_id);
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_INPUT_TXT;
 				midi_handler.sendSysex(sysexPad);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_PAD_SIZE/3);		
@@ -2037,6 +2048,7 @@ public class Main_window {
 				}
 				Utils.copyConfigPosToSysex(configFull.configPos[pad_id], sysexPos, configOptions.chainId, pad_id);
 				sysexPos[4] = (byte)id; 
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_POS_TXT;
 				midi_handler.sendSysex(sysexPos);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_POS_SIZE/3);	
@@ -2045,20 +2057,21 @@ public class Main_window {
 		    	while (compareSysexToConfigIsOn) {
 		    		delayMs(2);
 		    	}
-		    	getPadOneZone(pad_id);
+		    	getPadOneZoneThisThread(pad_id);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 	
-	private void sendThirdZone(int pad_id, boolean withReport) {
+	private void sendThirdZoneThisThread(int pad_id, boolean withReport) {
 		byte [] sysex3rd = new byte[Constants.MD_SYSEX_3RD_SIZE];
 		
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				pad_id = (pad_id - 1)/2;
 				Utils.copyConfig3rdToSysex(configFull.config3rds[pad_id], sysex3rd, configOptions.chainId, pad_id);
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_3RD_ZONE_TXT;
 				midi_handler.sendSysex(sysex3rd);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_3RD_SIZE/3);
@@ -2067,14 +2080,14 @@ public class Main_window {
 		    	while (compareSysexToConfigIsOn) {
 		    		delayMs(2);
 		    	}
-		    	getThirdZone(pad_id);
+		    	getThirdZoneThisThread(pad_id);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 
-	private void sendPad(int pad_id, boolean withReport) {
+	private void sendPadThisThread(int pad_id, boolean withReport) {
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				if (withReport) {
@@ -2086,11 +2099,11 @@ public class Main_window {
 				if (pad_id == 0) {
 					compareSysexToConfigLast = withReport;			
 				}
-				sendPadOneZone(pad_id, false);
+				sendPadOneZoneThisThread(pad_id, false);
 				if (pad_id > 0 ) {
-					sendPadOneZone(pad_id + 1, false);
+					sendPadOneZoneThisThread(pad_id + 1, false);
 					compareSysexToConfigLast = withReport;
-					sendThirdZone(pad_id, false);
+					sendThirdZoneThisThread(pad_id, false);
 				}
 			} else {
 				midiIsNotOpen();
@@ -2098,10 +2111,35 @@ public class Main_window {
 		}
 	}
 	
-	private void getAllPads() {
+	private void getAllPadsThisThread() {
 		if (midi_handler.isMidiOpen()) {
 			compareSysexToConfigIsOn = false;
 			progressBar.setVisible(true);
+    		int i;
+            resizeWindow = false;
+    		progressBar.setMinimum(0);
+    		progressBar.setMaximum(configFull.configGlobalMisc.inputs_count - 3);
+    		for (i = 0; i<(configFull.configGlobalMisc.inputs_count - 2); i++) {
+    			progressBar.setValue(i);
+    			Rectangle progressRect = progressBar.getBounds();
+    			progressRect.x = 0;
+    			progressRect.y = 0;
+    			progressBar.paintImmediately( progressRect );
+    			getPadThisThread(i);
+    			if (i>0) {
+    				i++;
+    			}
+    		}
+    		progressBar.setVisible(false);
+            resizeWindow = true;
+            resizeMainWindow();
+		} else {
+			midiIsNotOpen();
+		}
+	}
+
+	private void getAllPads() {
+		if (midi_handler.isMidiOpen()) {
 			Thread t = new Thread(new Runnable() {
 	            public void run() {
 	                // since we're not on the EDT,
@@ -2109,24 +2147,7 @@ public class Main_window {
 	                // into the Event Dispatching Queue
 	                SwingUtilities.invokeLater( new Runnable() {
 	                    public void run() {
-	                		int i;
-	                        resizeWindow = false;
-	                		progressBar.setMinimum(0);
-	                		progressBar.setMaximum(configFull.configGlobalMisc.inputs_count - 3);
-	                		for (i = 0; i<(configFull.configGlobalMisc.inputs_count - 2); i++) {
-	                			progressBar.setValue(i);
-	                			Rectangle progressRect = progressBar.getBounds();
-	                			progressRect.x = 0;
-	                			progressRect.y = 0;
-	                			progressBar.paintImmediately( progressRect );
-	                			getPad(i);
-	                			if (i>0) {
-	                				i++;
-	                			}
-	                		}
-	                		progressBar.setVisible(false);
-	                        resizeWindow = true;
-	                        resizeMainWindow();
+	                    	getAllPadsThisThread();
 	                   }
 	                });
 	            }
@@ -2139,7 +2160,7 @@ public class Main_window {
 		}
 	}
 		
-	private void sendAllPadsInThisThread(boolean withReport) {
+	private void sendAllPadsThisThread(boolean withReport) {
 		if (midi_handler.isMidiOpen()) {
 			progressBar.setVisible(true);
 			sendWithReport(withReport);
@@ -2160,13 +2181,13 @@ public class Main_window {
 				progressRect.x = 0;
 				progressRect.y = 0;
 				progressBar.paintImmediately( progressRect );
-				sendPad(i, false);
+				sendPadThisThread(i, false);
 				if (i>0) {
 					i++;
 				}
 			}
 			compareSysexToConfigLast = withReportInTask;
-			sendPad(configFull.configGlobalMisc.inputs_count - 3, false);
+			sendPadThisThread(configFull.configGlobalMisc.inputs_count - 3, false);
 			progressBar.setVisible(false);
 	        resizeWindow = true;
 	        resizeMainWindow();
@@ -2193,7 +2214,7 @@ public class Main_window {
 	                // into the Event Dispatching Queue
 	                SwingUtilities.invokeLater( new Runnable() {
 	                    public void run() {
-	                    	sendAllPadsInThisThread(withReportInTask);
+	                    	sendAllPadsThisThread(withReportInTask);
 	                   }
 	                });
 	            }
@@ -2206,7 +2227,7 @@ public class Main_window {
 		}
 	}
 
-	private void getCustomName(int name_id) {
+	private void getCustomNameThisThread(int name_id) {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
@@ -2218,14 +2239,14 @@ public class Main_window {
 					delayMs(1);
 					delayCounter--;
 				}
-				if (!configFull.configCustomNames[name_id].sysexReceived) getTimedOut();
+				if (!configFull.configCustomNames[name_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CUSTOM_NAME_TXT);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 		
-	private void getConfigName(int name_id) {
+	private void getConfigNameThisThread(int name_id) {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
@@ -2237,18 +2258,19 @@ public class Main_window {
 					delayMs(1);
 					delayCounter--;
 				}
-				if (!configFull.configConfigNames[name_id].sysexReceived) getTimedOut();
+				if (!configFull.configConfigNames[name_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_NAME_TXT);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 
-	private void sendCustomName(int name_id, boolean withReport) {
+	private void sendCustomNameThisThread(int name_id, boolean withReport) {
 		byte [] sysexCustomName = new byte[Constants.MD_SYSEX_CUSTOM_NAME_SIZE];
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				Utils.copyConfigCustomNameToSysex(configFull.configCustomNames[name_id], sysexCustomName, configOptions.chainId, name_id);
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_CUSTOM_NAME_TXT;
 				midi_handler.sendSysex(sysexCustomName);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_CUSTOM_NAME_SIZE/3);
@@ -2257,18 +2279,19 @@ public class Main_window {
 		    	while (compareSysexToConfigIsOn) {
 		    		delayMs(2);
 		    	}
-		    	getCustomName(name_id);
+		    	getCustomNameThisThread(name_id);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 
-	private void sendConfigName(int name_id, boolean withReport) {
+	private void sendConfigNameThisThread(int name_id, boolean withReport) {
 		byte [] sysexConfigName = new byte[Constants.MD_SYSEX_CONFIG_NAME_SIZE];
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				Utils.copyConfigConfigNameToSysex(configFull.configConfigNames[name_id], sysexConfigName, configOptions.chainId, name_id);
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_CONFIG_NAME_TXT;
 				midi_handler.sendSysex(sysexConfigName);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_CONFIG_NAME_SIZE/3);
@@ -2283,23 +2306,23 @@ public class Main_window {
 		}
 	}
 
-	private void getAllCustomNames() {
+	private void getAllCustomNamesThisThread() {
 		if (midi_handler.isMidiOpen()) {
 			compareSysexToConfigIsOn = false;
 			for (int i = 0; i < configFull.customNamesCount; i++) {
-				getCustomName(i);
+				getCustomNameThisThread(i);
 			}
 		} else {
 			midiIsNotOpen();
 		}
 	}
 		
-	private void getAllConfigNames() {
+	private void getAllConfigNamesThisThread() {
 		if (midi_handler.isMidiOpen()) {
 			if (configFull.configGlobalMisc.config_names_en) {
 				compareSysexToConfigIsOn = false;
 				for (int i = 0; i < configFull.configNamesCount; i++) {
-					getConfigName(i);
+					getConfigNameThisThread(i);
 				}			
 			}
 		} else {
@@ -2307,13 +2330,13 @@ public class Main_window {
 		}
 	}
 
-	private void sendAllCustomNamesInThisThread(boolean withReport) {
+	private void sendAllCustomNamesThisThread(boolean withReport) {
 		if (midi_handler.isMidiOpen()) {
 			for (int i = 0; i < (configFull.customNamesCount - 1); i++) {
-				sendCustomName(i, false);
+				sendCustomNameThisThread(i, false);
 			}
 			compareSysexToConfigLast = withReportInTask;
-			sendCustomName(configFull.customNamesCount - 1, false);
+			sendCustomNameThisThread(configFull.customNamesCount - 1, false);
 		} else {
 			midiIsNotOpen();
 		}
@@ -2335,7 +2358,7 @@ public class Main_window {
 	                // into the Event Dispatching Queue
 	                SwingUtilities.invokeLater( new Runnable() {
 	                    public void run() {
-	                    	sendAllCustomNamesInThisThread(withReportInTask);
+	                    	sendAllCustomNamesThisThread(withReportInTask);
 	                   }
 	                });
 	            }
@@ -2347,7 +2370,7 @@ public class Main_window {
 			midiIsNotOpen();
 		}
 	}
-	private void getCurve(int curve_id) {
+	private void getCurveThisThread(int curve_id) {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
@@ -2359,18 +2382,19 @@ public class Main_window {
 					delayMs(1);
 					delayCounter--;
 				}
-				if (!configFull.configCurves[curve_id].sysexReceived) getTimedOut();
+				if (!configFull.configCurves[curve_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CURVE_TXT);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 
-	private void sendCurve(int curve_id, boolean withReport) {
+	private void sendCurveThisThread(int curve_id, boolean withReport) {
 		byte [] sysexCurve = new byte[Constants.MD_SYSEX_CURVE_SIZE];
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
 				Utils.copyConfigCurveToSysex(configFull.configCurves[curve_id], sysexCurve, configOptions.chainId, curve_id);
+				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_CURVE_TXT;
 				midi_handler.sendSysex(sysexCurve);
 				//delayMs(configOptions.sysexDelay);
 				//delayMs(Constants.MD_SYSEX_CURVE_SIZE/3);
@@ -2379,32 +2403,31 @@ public class Main_window {
 		    	while (compareSysexToConfigIsOn) {
 		    		delayMs(2);
 		    	}
-		    	getCurve(curve_id);
+		    	getCurveThisThread(curve_id);
 			} else {
 				midiIsNotOpen();
 			}
 		}
 	}
 	
-	private void getAllCurves() {
+	private void getAllCurvesThisThread() {
 		if (midi_handler.isMidiOpen()) {
 			compareSysexToConfigIsOn = false;
 			for (int i = 0; i<Constants.CURVES_COUNT; i++) {
-				getCurve(i);
-	    		//delayMs(5);
+				getCurveThisThread(i);
 			}
 		} else {
 			midiIsNotOpen();
 		}
 	}
 		
-	private void sendAllCurvesInThisThread(boolean withReport) {
+	private void sendAllCurvesThisThread(boolean withReport) {
 		if (midi_handler.isMidiOpen()) {
 			for (int i = 0; i < (Constants.CURVES_COUNT - 1); i++) {
-				sendCurve(i, false);
+				sendCurveThisThread(i, false);
 			}
 			compareSysexToConfigLast = withReportInTask;
-			sendCurve(Constants.CURVES_COUNT - 1, false);
+			sendCurveThisThread(Constants.CURVES_COUNT - 1, false);
 		} else {
 			midiIsNotOpen();
 		}
@@ -2426,7 +2449,7 @@ public class Main_window {
 	                // into the Event Dispatching Queue
 	                SwingUtilities.invokeLater( new Runnable() {
 	                    public void run() {
-	                    	sendAllCurvesInThisThread(withReportInTask);
+	                    	sendAllCurvesThisThread(withReportInTask);
 	                   }
 	                });
 	            }
@@ -2439,16 +2462,16 @@ public class Main_window {
 		}
 	}
 
-	private void getAll() {
+	private void getAllThisThread() {
 		if (midi_handler.isMidiOpen()) {
 			compareSysexToConfigIsOn = false;
-			getGlobalMisc();
-			getMisc();
-			getPedal();
-			getAllPads();
-			getAllCurves();
-			getAllCustomNames();
-			getAllConfigNames();
+			getGlobalMiscThisThread();
+			getMiscThisThread();
+			getPedalThisThread();
+			getAllPadsThisThread();
+			getAllCurvesThisThread();
+			getAllCustomNamesThisThread();
+			getAllConfigNamesThisThread();
 		} else {
 			midiIsNotOpen();
 		}
@@ -2477,9 +2500,9 @@ public class Main_window {
 	                    	while (compareSysexToConfigIsOn) {
 	                    		delayMs(2);
 	                    	}
-	                		sendAllPadsInThisThread(false);
-	                		sendAllCurvesInThisThread(false);
-	                		sendAllCustomNamesInThisThread(false);
+	                		sendAllPadsThisThread(false);
+	                		sendAllCurvesThisThread(false);
+	                		sendAllCustomNamesThisThread(false);
 	                		compareSysexToConfigLast = true;
 	                		sendPedal(false);
 	                    	while (compareSysexToConfigIsOn) {
@@ -2491,6 +2514,8 @@ public class Main_window {
 	                    		//
 	                    		delayedSaveToSlot = false;
 	                    	}
+	                    	midi_handler.closeAllPorts();
+	                    	midi_handler.initPorts();
 	
 	                   }
 	                });
@@ -2781,7 +2806,7 @@ public class Main_window {
 			//if (buffer[3] == Constants.MD_SYSEX_MISC) {
 				if (compareResultCombined != 0) {
 					commsStateLabel.setBackground(Color.RED);
-					commsStateLabel.setText(Constants.SYSEX_TIMEOUT_TEXT);
+					commsStateLabel.setText(Constants.SYSEX_ERROR_VERIFY_TEXT);
 				} else {
 					commsStateLabel.setBackground(Color.GREEN);
 					commsStateLabel.setText(Constants.SYSEX_OK_TEXT);					
@@ -2797,7 +2822,7 @@ public class Main_window {
 	}
 	
 	private void decodeSysex(byte [] buffer) {
-		if (sysexTimedOut) return;
+		//if (sysexTimedOut) return;
 		if (buffer[1] == Constants.MD_SYSEX) {
 			if (buffer[2] == (byte) configOptions.chainId) {
 				switch (buffer[3]) {

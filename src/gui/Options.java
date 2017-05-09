@@ -271,7 +271,7 @@ public class Options extends JDialog {
 		
 		spinner_sysexDelay = new JSpinner();
 		spinner_sysexDelay.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		spinner_sysexDelay.setModel(new SpinnerNumberModel(10, 10, 100, 1));
+		spinner_sysexDelay.setModel(new SpinnerNumberModel(10, 10, 1000, 1));
 		panel.add(spinner_sysexDelay, "1, 1, fill, fill");
 		
 		JLabel lblMs = new JLabel("ms");

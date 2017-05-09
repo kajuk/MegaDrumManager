@@ -4,7 +4,7 @@ import java.awt.Color;
 
 public interface Constants {
 	//public static final int MIDI_BARS_COUNT = 32;
-	public static final String MD_VERSION = "20170507";
+	public static final String MD_VERSION = "20170508";
 	public static final int MD_MINIMUM_VERSION = 20170413;
 	public static final String WARNING_VERSION = "<html><font size=2>For full compatibilty between MegaDrum Manager and MegaDrum</font></html>\n" +
 			"<html><font size=2>you should upgrade MegaDrum to version " + MD_MINIMUM_VERSION + " or newer</font></html>";
@@ -179,7 +179,20 @@ public interface Constants {
 			"3. Click button Start.\n" +
 			"4. Wait for the upgrade to finish.\n" +
 			"5. Click button Close.";
-	public static final String SYSEX_TIMEOUT_TEXT = "Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_VERSION_TXT = "Version Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_MCU_TXT = "MCU Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_MISC_TXT = "Misc Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_GLOBAL_MISC_TXT = "GlobalMisc Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_PEDAL_TXT = "HiHat Pedal Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_INPUT_TXT = "Input Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_3RD_ZONE_TXT = "3rd Zone Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_POS_TXT = "Positional Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_CURVE_TXT = "Curve Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_CUSTOM_NAME_TXT = "Custom Name Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_CONFIG_NAME_TXT = "Config Name Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_CONFIG_CURRENT_TXT = "Config Current Sysex Timeout";
+	public static final String SYSEX_TIMEOUT_CONFIG_COUNT_TXT = "Config COUNT Sysex Timeout";
 	public static final String SYSEX_OK_TEXT = "Sysex Ok";
+	public static final String SYSEX_ERROR_VERIFY_TEXT = "Sysex Verify Error";
 	public static final String MIDI_IS_NOT_OPEN = "MIDI is not open";
 }
