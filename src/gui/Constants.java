@@ -179,6 +179,7 @@ public interface Constants {
 			"3. Click button Start.\n" +
 			"4. Wait for the upgrade to finish.\n" +
 			"5. Click button Close.";
+	public static final int SYSEX_TIMEOUT_RETRIES = 2;
 	public static final String SYSEX_TIMEOUT_VERSION_TXT = "Version Sysex Timeout";
 	public static final String SYSEX_TIMEOUT_MCU_TXT = "MCU Sysex Timeout";
 	public static final String SYSEX_TIMEOUT_MISC_TXT = "Misc Sysex Timeout";

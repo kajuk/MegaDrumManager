@@ -1685,7 +1685,8 @@ public class Main_window {
 		commsStateLabel.setBackground(Color.RED);
 		commsStateLabel.setText("Get " + timeoutSource);
 		sysexTimedOut = true;
-	    System.out.print("Sysex timed out\n");
+	    //System.out.print("Sysex timed out\n");
+
 	}
 	
 	private void midiIsNotOpen() {
@@ -1694,17 +1695,32 @@ public class Main_window {
 		commsStateLabel.setText(Constants.MIDI_IS_NOT_OPEN);
 	}
 	
+	private void midi_reset_ports() {
+	    System.out.print("Reseting MIDI ports\n");		
+    	midi_handler.closeAllPorts();
+    	midi_handler.initPorts();
+	}
+	
 	private void getPedalThisThread() {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configPedal.sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PEDAL_SIZE/2);
-				midi_handler.requestConfigPedal();
-				while ((delayCounter > 0) && (!configFull.configPedal.sysexReceived)) {
-					delayMs(1);
-					delayCounter--;
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PEDAL_SIZE/2);
+					midi_handler.requestConfigPedal();
+					while ((delayCounter > 0) && (!configFull.configPedal.sysexReceived)) {
+						delayMs(1);
+						delayCounter--;
+					}
+					if (configFull.configPedal.sysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
 				}
 				if (!configFull.configPedal.sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_PEDAL_TXT);
 			} else {
@@ -1787,28 +1803,46 @@ public class Main_window {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configGlobalMisc.sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_GLOBAL_MISC_SIZE/2);
-				midi_handler.requestConfigGlobalMisc();	
-				//delayMs(10);
-				while ((delayCounter > 0) && (!configFull.configGlobalMisc.sysexReceived)) {
-					delayMs(1);
-					delayCounter--;
-				}
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_GLOBAL_MISC_SIZE/2);
+					midi_handler.requestConfigGlobalMisc();	
+					//delayMs(10);
+					while ((delayCounter > 0) && (!configFull.configGlobalMisc.sysexReceived)) {
+						delayMs(1);
+						delayCounter--;
+					}
+					if (configFull.configGlobalMisc.sysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
+				}				
 				if (!configFull.configGlobalMisc.sysexReceived) {
 					getTimedOut(Constants.SYSEX_TIMEOUT_GLOBAL_MISC_TXT);
 				} else {
 					getReadOnlyDataThisThread();
 					if (configFull.configGlobalMisc.config_names_en) {
+						retries = Constants.SYSEX_TIMEOUT_RETRIES;
 						compareSysexToConfigIsOn = false;
 						configFull.configNameSysexReceived = false;
-						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/2);
-						midi_handler.requestConfigConfigName(configFull.configCurrent);								
-						while ((delayCounter > 0) && (!configFull.configNameSysexReceived)) {
-							delayMs(1);
-							delayCounter--;
-						}
+						while (retries > 0) {
+							delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/2);
+							midi_handler.requestConfigConfigName(configFull.configCurrent);								
+							while ((delayCounter > 0) && (!configFull.configNameSysexReceived)) {
+								delayMs(1);
+								delayCounter--;
+							}
+							if (configFull.configNameSysexReceived) {
+								break;
+							} else {
+								midi_reset_ports();
+							}
+							retries--;
+						}						
 						if (!configFull.configNameSysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_NAME_TXT);
 					}
 				}
@@ -1840,27 +1874,43 @@ public class Main_window {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configCountSysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_COUNT_SIZE/2);
-				midi_handler.requestConfigCount();					
-				//delayMs(10);
-				while ((delayCounter > 0) && (!configFull.configCountSysexReceived)) {
-					delayMs(1);
-					delayCounter--;
-				}
-				if (!configFull.configCountSysexReceived) {
-					getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_COUNT_TXT);
-				} else {
-					compareSysexToConfigIsOn = false;
-					configFull.configCurrentSysexReceived = false;
-					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_CURRENT_SIZE/2);
-					midi_handler.requestConfigCurrent();
-					//delayMs(10);
-					while ((delayCounter > 0) && (!configFull.configCurrentSysexReceived)) {
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_COUNT_SIZE/2);
+					midi_handler.requestConfigCount();					
+					while ((delayCounter > 0) && (!configFull.configCountSysexReceived)) {
 						delayMs(1);
 						delayCounter--;
 					}
+					if (configFull.configCountSysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
+				}												
+				if (!configFull.configCountSysexReceived) {
+					getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_COUNT_TXT);
+				} else {
+					retries = Constants.SYSEX_TIMEOUT_RETRIES;
+					compareSysexToConfigIsOn = false;
+					configFull.configCurrentSysexReceived = false;
+					while (retries > 0) {
+						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_CURRENT_SIZE/2);
+						midi_handler.requestConfigCurrent();
+						while ((delayCounter > 0) && (!configFull.configCurrentSysexReceived)) {
+							delayMs(1);
+							delayCounter--;
+						}
+						if (configFull.configCurrentSysexReceived) {
+							break;
+						} else {
+							midi_reset_ports();
+						}
+						retries--;
+					}																	
 					if (!configFull.configCurrentSysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_CURRENT_TXT);
 				}		
 			} else {
@@ -1918,16 +1968,23 @@ public class Main_window {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configMisc.sysexReceived = false;
-				//delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_MISC_SIZE/3);
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_MISC_SIZE/2);
-				midi_handler.requestConfigMisc();					
-				while ((delayCounter > 0) && (!configFull.configMisc.sysexReceived)) {
-					delayMs(1);
-					delayCounter--;
-				}
-				//delayMs(30);
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_MISC_SIZE/2);
+					midi_handler.requestConfigMisc();					
+					while ((delayCounter > 0) && (!configFull.configMisc.sysexReceived)) {
+						delayMs(1);
+						delayCounter--;
+					}
+					if (configFull.configMisc.sysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
+				}												
 				if (!configFull.configMisc.sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_MISC_TXT);
 			} else {
 				midiIsNotOpen();
@@ -1996,85 +2053,148 @@ public class Main_window {
 	private void getPadThisThread(int pad_id) {
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
-				compareSysexToConfigIsOn = false;
+				int retries;
 				int delayCounter;
+				compareSysexToConfigIsOn = false;
 				if ( pad_id > 0 ) {
+					retries = Constants.SYSEX_TIMEOUT_RETRIES;
 					configFull.configPads[pad_id].sysexReceived = false;
-				    System.out.printf("sysexReceived for pad id %d set to false\n", pad_id);
-					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
-					midi_handler.requestConfigPad(pad_id + 1);
-					while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
-						delayMs(1);
-						delayCounter--;
-					}
-					if (!configFull.configPads[pad_id].sysexReceived) {
-						getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
-					} else {
-						configFull.configPads[pad_id + 1].sysexReceived = false;
+					while (retries > 0) {
 						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
-						midi_handler.requestConfigPad(pad_id + 2);
-						while ((delayCounter > 0) && (!configFull.configPads[pad_id + 1].sysexReceived)) {
+						midi_handler.requestConfigPad(pad_id + 1);
+						while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
 							delayMs(1);
 							delayCounter--;
 						}
-						if (!configFull.configPads[pad_id + 1].sysexReceived) {
-							getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
+						if (configFull.configPads[pad_id].sysexReceived) {
+							break;
 						} else {
-							configFull.configPos[pad_id].sysexReceived = false;
-							delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
-							midi_handler.requestConfigPos(pad_id);
-							while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
+							midi_reset_ports();
+						}
+						retries--;
+					}												
+					if (!configFull.configPads[pad_id].sysexReceived) {
+						getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
+					} else {
+						retries = Constants.SYSEX_TIMEOUT_RETRIES;
+						configFull.configPads[pad_id + 1].sysexReceived = false;
+						while (retries > 0) {
+							delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
+							midi_handler.requestConfigPad(pad_id + 2);
+							while ((delayCounter > 0) && (!configFull.configPads[pad_id + 1].sysexReceived)) {
 								delayMs(1);
 								delayCounter--;
 							}
-							if (!configFull.configPos[pad_id].sysexReceived) {
-								getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
+							if (configFull.configPads[pad_id + 1].sysexReceived) {
+								break;
 							} else {
-								configFull.configPos[pad_id + 1].sysexReceived = false;
+								midi_reset_ports();
+							}
+							retries--;
+						}												
+						if (!configFull.configPads[pad_id + 1].sysexReceived) {
+							getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
+						} else {
+							retries = Constants.SYSEX_TIMEOUT_RETRIES;
+							configFull.configPos[pad_id].sysexReceived = false;
+							while (retries > 0) {
 								delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
-								midi_handler.requestConfigPos(pad_id + 1);
-								while ((delayCounter > 0) && (!configFull.configPos[pad_id + 1].sysexReceived)) {
+								midi_handler.requestConfigPos(pad_id);
+								while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
 									delayMs(1);
 									delayCounter--;
 								}
+								if (configFull.configPos[pad_id].sysexReceived) {
+									break;
+								} else {
+									midi_reset_ports();
+								}
+								retries--;
+							}												
+							if (!configFull.configPos[pad_id].sysexReceived) {
+								getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
+							} else {
+								retries = Constants.SYSEX_TIMEOUT_RETRIES;
+								configFull.configPos[pad_id + 1].sysexReceived = false;
+								while (retries > 0) {
+									delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
+									midi_handler.requestConfigPos(pad_id + 1);
+									while ((delayCounter > 0) && (!configFull.configPos[pad_id + 1].sysexReceived)) {
+										delayMs(1);
+										delayCounter--;
+									}
+									if (configFull.configPos[pad_id + 1].sysexReceived) {
+										break;
+									} else {
+										midi_reset_ports();
+									}
+									retries--;
+								}												
 								if (!configFull.configPos[pad_id + 1].sysexReceived) {
 									getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
 								} else {
+									retries = Constants.SYSEX_TIMEOUT_RETRIES;
 									configFull.config3rds[(pad_id - 1)/2].sysexReceived = false;
-									delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
-									midi_handler.requestConfig3rd((pad_id - 1)/2);
-									while ((delayCounter > 0) && (!configFull.config3rds[(pad_id - 1)/2].sysexReceived)) {
-										delayMs(1);
-										delayCounter--;
-									}			
+									while (retries > 0) {
+										delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
+										midi_handler.requestConfig3rd((pad_id - 1)/2);
+										while ((delayCounter > 0) && (!configFull.config3rds[(pad_id - 1)/2].sysexReceived)) {
+											delayMs(1);
+											delayCounter--;
+										}			
+										if (configFull.config3rds[(pad_id - 1)/2].sysexReceived) {
+											break;
+										} else {
+											midi_reset_ports();
+										}
+										retries--;
+									}												
 									if (!configFull.config3rds[(pad_id - 1)/2].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_3RD_ZONE_TXT);
 								}					
 							}				
 						}						
 					}					
 				} else {
+					retries = Constants.SYSEX_TIMEOUT_RETRIES;
 					configFull.configPads[0].sysexReceived = false;
-				    System.out.printf("sysexReceived for pad id %d set to false\n", 0);
-					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
-					midi_handler.requestConfigPad(1);
-					while ((delayCounter > 0) && (!configFull.configPads[0].sysexReceived)) {
-						delayMs(1);
-						delayCounter--;
-					}
-					if (!configFull.configPads[0].sysexReceived) {
-					    System.out.printf("sysexReceived for pad id %d is still false\n", 0);
-						getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
-					} else {
-						configFull.configPos[0].sysexReceived = false;
-					    System.out.printf("sysexReceived for Positional id %d set to false\n", 0);
-						delayCounter = configOptions.sysexDelay + + (Constants.MD_SYSEX_POS_SIZE/2);
-						midi_handler.requestConfigPos(0);
-						while ((delayCounter > 0) && (!configFull.configPos[0].sysexReceived)) {
+				    //System.out.printf("sysexReceived for pad id %d set to false\n", 0);
+					while (retries > 0) {
+						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
+						midi_handler.requestConfigPad(1);
+						while ((delayCounter > 0) && (!configFull.configPads[0].sysexReceived)) {
 							delayMs(1);
 							delayCounter--;
 						}
+						if (configFull.configPads[0].sysexReceived) {
+							break;
+						} else {
+							midi_reset_ports();
+						}
+						retries--;
+					}												
+					if (!configFull.configPads[0].sysexReceived) {
+					    //System.out.printf("sysexReceived for pad id %d is still false\n", 0);
+						getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
+					} else {
+						retries = Constants.SYSEX_TIMEOUT_RETRIES;
+						configFull.configPos[0].sysexReceived = false;
+					    //System.out.printf("sysexReceived for Positional id %d set to false\n", 0);
+						while (retries > 0) {
+							delayCounter = configOptions.sysexDelay + + (Constants.MD_SYSEX_POS_SIZE/2);
+							midi_handler.requestConfigPos(0);
+							while ((delayCounter > 0) && (!configFull.configPos[0].sysexReceived)) {
+								delayMs(1);
+								delayCounter--;
+							}
+							if (configFull.configPos[0].sysexReceived) {
+								break;
+							} else {
+								midi_reset_ports();
+							}
+							retries--;
+						}												
 						if (!configFull.configPos[0].sysexReceived) {
-						    System.out.printf("sysexReceived for Positional id %d is still false\n", 0);
+						    //System.out.printf("sysexReceived for Positional id %d is still false\n", 0);
 							getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
 						}
 					}					
@@ -2101,32 +2221,50 @@ public class Main_window {
 
 		});
 	    t.setPriority( Thread.NORM_PRIORITY );
-	    t.start();
-	    System.out.print("getPad thread started\n");
+	    t.run();
+	    //System.out.print("getPad thread started\n");
 	}
 	
 	private void getPadOneZoneThisThread(int pad_id) {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configPads[pad_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
-				midi_handler.requestConfigPad(pad_id + 1);
-				while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
-					delayMs(1);
-					delayCounter--;
-				}
-				if (!configFull.configPads[pad_id].sysexReceived) {
-					getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
-				} else {
-					configFull.configPos[pad_id].sysexReceived = false;
-					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
-					midi_handler.requestConfigPos(pad_id);
-					while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_PAD_SIZE/2);
+					midi_handler.requestConfigPad(pad_id + 1);
+					while ((delayCounter > 0) && (!configFull.configPads[pad_id].sysexReceived)) {
 						delayMs(1);
 						delayCounter--;
 					}
+					if (configFull.configPads[pad_id].sysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
+				}																
+				if (!configFull.configPads[pad_id].sysexReceived) {
+					getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
+				} else {
+					retries = Constants.SYSEX_TIMEOUT_RETRIES;
+					configFull.configPos[pad_id].sysexReceived = false;
+					while (retries > 0) {
+						delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
+						midi_handler.requestConfigPos(pad_id);
+						while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
+							delayMs(1);
+							delayCounter--;
+						}
+						if (configFull.configPos[pad_id].sysexReceived) {
+							break;
+						} else {
+							midi_reset_ports();
+						}
+						retries--;
+					}																
 					if (!configFull.configPos[pad_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
 				}		
 			} else {
@@ -2140,14 +2278,23 @@ public class Main_window {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.config3rds[pad_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
-				midi_handler.requestConfig3rd(pad_id);
-				while ((delayCounter > 0) && (!configFull.config3rds[pad_id].sysexReceived)) {
-					delayMs(1);
-					delayCounter--;
-				}
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
+					midi_handler.requestConfig3rd(pad_id);
+					while ((delayCounter > 0) && (!configFull.config3rds[pad_id].sysexReceived)) {
+						delayMs(1);
+						delayCounter--;
+					}
+					if (configFull.config3rds[pad_id].sysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
+				}																
 				if (!configFull.config3rds[pad_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_3RD_ZONE_TXT);
 			} else {
 				midiIsNotOpen();
@@ -2428,14 +2575,23 @@ public class Main_window {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configCustomNames[name_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CUSTOM_NAME_SIZE/2);
-				midi_handler.requestConfigCustomName(name_id);
-				while ((delayCounter > 0) && (!configFull.configCustomNames[name_id].sysexReceived)) {
-					delayMs(1);
-					delayCounter--;
-				}
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CUSTOM_NAME_SIZE/2);
+					midi_handler.requestConfigCustomName(name_id);
+					while ((delayCounter > 0) && (!configFull.configCustomNames[name_id].sysexReceived)) {
+						delayMs(1);
+						delayCounter--;
+					}
+					if (configFull.configCustomNames[name_id].sysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
+				}																
 				if (!configFull.configCustomNames[name_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CUSTOM_NAME_TXT);
 			} else {
 				midiIsNotOpen();
@@ -2466,14 +2622,23 @@ public class Main_window {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configConfigNames[name_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/2);
-				midi_handler.requestConfigConfigName(name_id);
-				while ((delayCounter > 0) && (!configFull.configConfigNames[name_id].sysexReceived)) {
-					delayMs(1);
-					delayCounter--;
-				}
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/2);
+					midi_handler.requestConfigConfigName(name_id);
+					while ((delayCounter > 0) && (!configFull.configConfigNames[name_id].sysexReceived)) {
+						delayMs(1);
+						delayCounter--;
+					}
+					if (configFull.configConfigNames[name_id].sysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
+				}																
 				if (!configFull.configConfigNames[name_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_NAME_TXT);
 			} else {
 				midiIsNotOpen();
@@ -2648,14 +2813,23 @@ public class Main_window {
 		int delayCounter;
 		if (!sysexTimedOut) {
 			if (midi_handler.isMidiOpen()) {
+				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configCurves[curve_id].sysexReceived = false;
-				delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CURVE_SIZE/2);
-				midi_handler.requestConfigCurve(curve_id);
-				while ((delayCounter > 0) && (!configFull.configCurves[curve_id].sysexReceived)) {
-					delayMs(1);
-					delayCounter--;
-				}
+				while (retries > 0) {
+					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CURVE_SIZE/2);
+					midi_handler.requestConfigCurve(curve_id);
+					while ((delayCounter > 0) && (!configFull.configCurves[curve_id].sysexReceived)) {
+						delayMs(1);
+						delayCounter--;
+					}
+					if (configFull.configCurves[curve_id].sysexReceived) {
+						break;
+					} else {
+						midi_reset_ports();
+					}
+					retries--;
+				}																
 				if (!configFull.configCurves[curve_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CURVE_TXT);
 			} else {
 				midiIsNotOpen();
@@ -2853,10 +3027,7 @@ public class Main_window {
 	                    		setConfigCurrent(delayedSaveToSlotNumber);
 	                    		//
 	                    		delayedSaveToSlot = false;
-	                    	}
-	                    	midi_handler.closeAllPorts();
-	                    	midi_handler.initPorts();
-	
+	                    	}	
 	                   }
 	                });
 	            }
@@ -3163,7 +3334,7 @@ public class Main_window {
 	
 	private void decodeSysex(byte [] buffer) {
 		//if (sysexTimedOut) return;
-	    System.out.print("Decoding received Sysex\n");
+	    //System.out.print("Decoding received Sysex\n");
 		if (buffer[1] == Constants.MD_SYSEX) {
 			if (buffer[2] == (byte) configOptions.chainId) {
 				switch (buffer[3]) {
@@ -3188,7 +3359,7 @@ public class Main_window {
 						Utils.copySysexToConfigPad(midi_handler.bufferIn, moduleConfigFull.configPads[buffer[4] - 1]);
 						configFull.configPads[buffer[4] - 1].syncState = Constants.SYNC_STATE_RECEIVED;
 						configFull.configPads[buffer[4] - 1].sysexReceived = true;
-					    System.out.printf("sysexReceived for pad id %d set to true\n", buffer[4] - 1);
+					    //System.out.printf("sysexReceived for pad id %d set to true\n", buffer[4] - 1);
 						setSysexOk();
 						controlsPads.updateControls();
 						break;
@@ -3202,7 +3373,7 @@ public class Main_window {
 						Utils.copySysexToConfigPos(midi_handler.bufferIn, configFull.configPos[id]);
 						Utils.copySysexToConfigPos(midi_handler.bufferIn, moduleConfigFull.configPos[id]);
 						configFull.configPos[id].sysexReceived = true;
-					    System.out.printf("sysexReceived for Positional id %d set to true\n", id);
+					    //System.out.printf("sysexReceived for Positional id %d set to true\n", id);
 						setSysexOk();
 						controlsPads.updateControls();
 						break;
