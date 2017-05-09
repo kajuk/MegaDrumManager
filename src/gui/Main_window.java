@@ -1696,7 +1696,7 @@ public class Main_window {
 	}
 	
 	private void midi_reset_ports() {
-	    System.out.print("Reseting MIDI ports\n");		
+	    //System.out.print("Reseting MIDI ports\n");		
     	midi_handler.closeAllPorts();
     	midi_handler.initPorts();
 	}
