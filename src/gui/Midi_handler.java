@@ -604,9 +604,10 @@ public class Midi_handler {
 			{
 				for (int i = 0; i < nPorts; i++) {
 					midiin = MidiSystem.getMidiDevice(aInfos[i]);
+					//System.out.printf("Checking In Port: %s\n",aInfos[i].getName());
 					if (midiin.getMaxTransmitters() != 0) {
 						if (aInfos[i].getName().equals(configOptions.MidiInName)) {
-					    	midiin = MidiSystem.getMidiDevice(aInfos[i]);
+					    	//midiin = MidiSystem.getMidiDevice(aInfos[i]);
 					    	midiin.open();
 							transmitter = midiin.getTransmitter();
 							transmitter.setReceiver(dump_receiver);
@@ -627,9 +628,10 @@ public class Midi_handler {
 			{
 				for (int i = 0; i < nPorts; i++) {
 					midiout = MidiSystem.getMidiDevice(aInfos[i]);
+					//System.out.printf("Checking Out Port: %s\n",aInfos[i].getName());
 					if (midiout.getMaxReceivers() != 0) {
 						if (aInfos[i].getName().equals(configOptions.MidiOutName)) {
-					    	midiout = MidiSystem.getMidiDevice(aInfos[i]);
+					    	//midiout = MidiSystem.getMidiDevice(aInfos[i]);
 					    	midiout.open();
 					    	receiver = midiout.getReceiver();
 							//System.out.printf("Opened MIDI Out Port: %s\n",configOptions.MidiOutName);					    
