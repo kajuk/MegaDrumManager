@@ -4,7 +4,7 @@ import java.awt.Color;
 
 public interface Constants {
 	//public static final int MIDI_BARS_COUNT = 32;
-	public static final String MD_VERSION = "20170509";
+	public static final String MD_VERSION = "20170510";
 	public static final int MD_MINIMUM_VERSION = 20170413;
 	public static final String WARNING_VERSION = "<html><font size=2>For full compatibilty between MegaDrum Manager and MegaDrum</font></html>\n" +
 			"<html><font size=2>you should upgrade MegaDrum to version " + MD_MINIMUM_VERSION + " or newer</font></html>";
@@ -179,7 +179,7 @@ public interface Constants {
 			"3. Click button Start.\n" +
 			"4. Wait for the upgrade to finish.\n" +
 			"5. Click button Close.";
-	public static final int SYSEX_TIMEOUT_RETRIES = 2;
+	public static final int SYSEX_TIMEOUT_RETRIES = 5;
 	public static final String SYSEX_TIMEOUT_VERSION_TXT = "Version Sysex Timeout";
 	public static final String SYSEX_TIMEOUT_MCU_TXT = "MCU Sysex Timeout";
 	public static final String SYSEX_TIMEOUT_MISC_TXT = "Misc Sysex Timeout";

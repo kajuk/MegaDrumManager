@@ -1698,7 +1698,9 @@ public class Main_window {
 	private void midi_reset_ports() {
 	    //System.out.print("Reseting MIDI ports\n");		
     	midi_handler.closeAllPorts();
+    	delayMs(50);
     	midi_handler.initPorts();
+    	delayMs(50);
 	}
 	
 	private void getPedalThisThread() {

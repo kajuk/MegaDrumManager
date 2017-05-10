@@ -256,7 +256,7 @@ public class Options extends JDialog {
 		checkBox_autoOpen.setHorizontalTextPosition(SwingConstants.LEADING);
 		panel_midi.add(checkBox_autoOpen, "3, 7");
 		
-		JLabel lblSysexDelay = new JLabel("SysEx delay");
+		JLabel lblSysexDelay = new JLabel("SysEx max timeout");
 		lblSysexDelay.setFont(new Font("Segoe UI", Font.PLAIN, 10));
 		panel_midi.add(lblSysexDelay, "1, 8");
 		
@@ -271,7 +271,7 @@ public class Options extends JDialog {
 		
 		spinner_sysexDelay = new JSpinner();
 		spinner_sysexDelay.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		spinner_sysexDelay.setModel(new SpinnerNumberModel(10, 10, 1000, 1));
+		spinner_sysexDelay.setModel(new SpinnerNumberModel(10, 10, 100, 1));
 		panel.add(spinner_sysexDelay, "1, 1, fill, fill");
 		
 		JLabel lblMs = new JLabel("ms");
