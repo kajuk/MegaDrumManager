@@ -104,7 +104,57 @@ public class Midi_handler {
 		}
 	}
 
+	public void clearMidiOut() {
+    	byte[] shortMessage={(byte)0xb0, (byte)0x7b, (byte) 0x00};
+		for (int j = 0; j < 16; j++) {
+			//sendMidiShort({(byte) 1,(byte)2,(byte)3});
+			this.sendMidiShort(shortMessage);
+			delayMs(10);
+		}
+	}
+	
 	public void sendMidiShort(byte [] buf) {
+		//System.out.printf("Preparing to send SysEx\n");
+		if (midiout != null) {
+			//System.out.printf("midiout is not Null\n");
+			if (midiout.isOpen()) {
+				//System.out.printf("midiout is open\n");
+				ShortMessage shortMessage = new ShortMessage();
+				//midiout.close();
+				//System.out.printf("midiout closed\n");
+		    	try {
+					//midiout.open();
+					//System.out.printf("midiout re-opened\n");
+					receiver = midiout.getReceiver();
+					//System.out.printf("midiout provded receiver\n");
+				} catch (MidiUnavailableException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					switch (buf.length) {
+					case 1:
+						shortMessage.setMessage(buf[0]);
+						break;
+					case 2:
+						shortMessage.setMessage(buf[0], buf[1],0);
+						break;
+					default:
+						shortMessage.setMessage(buf[0], buf[1],buf[2]);
+						break;
+					}
+					receiver.send(shortMessage, -1);
+				} catch (InvalidMidiDataException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+					Utils.show_error("Error sending Short MIDI message to port:\n" +
+							midiout.getDeviceInfo().getName() + "\n" +
+							"(" + e.getMessage() + ")");
+				}		
+			}
+		}
+	}
+	public void sendMidiShortThru(byte [] buf) {
 		if ((midithru != null) && (midithru.isOpen())) {
 			ShortMessage shortMessage = new ShortMessage();
 			try {
@@ -468,7 +518,7 @@ public class Midi_handler {
 				sysexReceived = true;
 			} else {
 				// TO-DO
-				sendMidiShort(bufferIn);
+				sendMidiShortThru(bufferIn);
 			}
 		}
 	}
@@ -582,7 +632,7 @@ public class Midi_handler {
 					    	midiout = MidiSystem.getMidiDevice(aInfos[i]);
 					    	midiout.open();
 					    	receiver = midiout.getReceiver();
-							//System.out.printf("Opened MIDI Out Port: %s\n",configOptions.MidiOutName);
+							//System.out.printf("Opened MIDI Out Port: %s\n",configOptions.MidiOutName);					    
 							break;
 						}
 					}
