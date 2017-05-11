@@ -105,12 +105,28 @@ public class Midi_handler {
 	}
 
 	public void clearMidiOut() {
+		if (midiout != null) {
+			if (midiout.isOpen()) {
+				midiout.close();
+			}
+		}
+		try {
+			midiout.open();
+		} catch (MidiUnavailableException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			Utils.show_error("Error re-opening MIDI Out port:\n" +
+					midiout.getDeviceInfo().getName() + "\n" +
+					"(" + e.getMessage() + ")");
+		}
+/*
     	byte[] shortMessage={(byte)0xb0, (byte)0x7b, (byte) 0x00};
 		for (int j = 0; j < 16; j++) {
 			//sendMidiShort({(byte) 1,(byte)2,(byte)3});
 			this.sendMidiShort(shortMessage);
 			delayMs(10);
 		}
+*/
 	}
 	
 	public void sendMidiShort(byte [] buf) {
@@ -604,10 +620,9 @@ public class Midi_handler {
 			{
 				for (int i = 0; i < nPorts; i++) {
 					midiin = MidiSystem.getMidiDevice(aInfos[i]);
-					//System.out.printf("Checking In Port: %s\n",aInfos[i].getName());
 					if (midiin.getMaxTransmitters() != 0) {
 						if (aInfos[i].getName().equals(configOptions.MidiInName)) {
-					    	//midiin = MidiSystem.getMidiDevice(aInfos[i]);
+					    	midiin = MidiSystem.getMidiDevice(aInfos[i]);
 					    	midiin.open();
 							transmitter = midiin.getTransmitter();
 							transmitter.setReceiver(dump_receiver);
@@ -628,10 +643,9 @@ public class Midi_handler {
 			{
 				for (int i = 0; i < nPorts; i++) {
 					midiout = MidiSystem.getMidiDevice(aInfos[i]);
-					//System.out.printf("Checking Out Port: %s\n",aInfos[i].getName());
 					if (midiout.getMaxReceivers() != 0) {
 						if (aInfos[i].getName().equals(configOptions.MidiOutName)) {
-					    	//midiout = MidiSystem.getMidiDevice(aInfos[i]);
+					    	midiout = MidiSystem.getMidiDevice(aInfos[i]);
 					    	midiout.open();
 					    	receiver = midiout.getReceiver();
 							//System.out.printf("Opened MIDI Out Port: %s\n",configOptions.MidiOutName);					    
