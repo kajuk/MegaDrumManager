@@ -1698,11 +1698,8 @@ public class Main_window {
 	private void midi_reset_ports() {
 		// On MIDI response timeouts,
 		// 8 resets at least needed to workaround Windows/Java/USB MIDI sysex corruption(bug?)
-	    //System.out.print("Reseting MIDI ports\n");
+	    //System.out.print("Resetting MIDI ports\n");
 	    midi_handler.clearMidiOut();
-    	//midi_handler.initPorts();
-    	//delayMs(10);
-	    //System.out.print("Re-opened MIDI ports\n");
 	}
 	
 	private void getPedalThisThread() {
