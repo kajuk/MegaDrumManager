@@ -1829,22 +1829,22 @@ public class Main_window {
 					if (configFull.configGlobalMisc.config_names_en) {
 						retries = Constants.SYSEX_TIMEOUT_RETRIES;
 						compareSysexToConfigIsOn = false;
-						configFull.configNameSysexReceived = false;
+						configFull.configConfigNames[configFull.configCurrent].sysexReceived = false;
 						while (retries > 0) {
 							delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/2);
 							midi_handler.requestConfigConfigName(configFull.configCurrent);								
-							while ((delayCounter > 0) && (!configFull.configNameSysexReceived)) {
+							while ((delayCounter > 0) && (!configFull.configConfigNames[configFull.configCurrent].sysexReceived)) {
 								delayMs(1);
 								delayCounter--;
 							}
-							if (configFull.configNameSysexReceived) {
+							if (configFull.configConfigNames[configFull.configCurrent].sysexReceived) {
 								break;
 							} else {
 								midi_reset_ports();
 							}
 							retries--;
 						}						
-						if (!configFull.configNameSysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_NAME_TXT);
+						if (!configFull.configConfigNames[configFull.configCurrent].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_CONFIG_NAME_TXT);
 					}
 				}
 			} else {
@@ -2098,48 +2098,28 @@ public class Main_window {
 						if (!configFull.configPads[pad_id + 1].sysexReceived) {
 							getTimedOut(Constants.SYSEX_TIMEOUT_INPUT_TXT);
 						} else {
-							skipPos = false;
-					    	if (configOptions.mcuType == 0) skipPos = true;	// Unknown MCU so it's not clear how to handle positional sysex
-							pos_id = pad_id;
-							if (configOptions.mcuType < 3){
-								//Atmega MCU, 8 (Atmega1284) or 4 (Atmega644) head/bow inputs with positional sensing starting from Snare
-								if (pos_id < 3) skipPos = true;
-								pos_id = pos_id - 3;
-								if ((pos_id&1) > 0) skipPos = true;
-								pos_id = pos_id/2;
-								if (pos_id > 7) skipPos = true;
-								if ((configOptions.mcuType < 2) && (pos_id > 3)) skipPos = true;
-							}
-							System.out.printf("MCU = %d, pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id, pos_id );
-							if (!skipPos) {
-								retries = Constants.SYSEX_TIMEOUT_RETRIES;
-								configFull.configPos[pos_id].sysexReceived = false;
-								while (retries > 0) {
-									delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
-									midi_handler.requestConfigPos(pos_id);
-									while ((delayCounter > 0) && (!configFull.configPos[pos_id].sysexReceived)) {
-										delayMs(1);
-										delayCounter--;
-									}
-									if (configFull.configPos[pos_id].sysexReceived) {
-										break;
-									} else {
-										midi_reset_ports();
-									}
-									retries--;
-								}																				
-							} else {
-								//Fake that we received Pos Sysex on Atmega for inputs where Pos is no present
-								pos_id = pad_id;
-								System.out.printf("Faking sysex received for pad_id = %d, pos_id = %d\n", pad_id, pos_id );
-								configFull.configPos[pos_id].sysexReceived = true;
-							}
-							if (!configFull.configPos[pos_id].sysexReceived) {
-								getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
+							retries = Constants.SYSEX_TIMEOUT_RETRIES;
+							configFull.config3rds[(pad_id - 1)/2].sysexReceived = false;
+							while (retries > 0) {
+								delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
+								midi_handler.requestConfig3rd((pad_id - 1)/2);
+								while ((delayCounter > 0) && (!configFull.config3rds[(pad_id - 1)/2].sysexReceived)) {
+									delayMs(1);
+									delayCounter--;
+								}			
+								if (configFull.config3rds[(pad_id - 1)/2].sysexReceived) {
+									break;
+								} else {
+									midi_reset_ports();
+								}
+								retries--;
+							}												
+							if (!configFull.config3rds[(pad_id - 1)/2].sysexReceived) {
+								getTimedOut(Constants.SYSEX_TIMEOUT_3RD_ZONE_TXT);
 							} else {
 								skipPos = false;
 						    	if (configOptions.mcuType == 0) skipPos = true;	// Unknown MCU so it's not clear how to handle positional sysex
-								pos_id = pad_id + 1;
+								pos_id = pad_id;
 								if (configOptions.mcuType < 3){
 									//Atmega MCU, 8 (Atmega1284) or 4 (Atmega644) head/bow inputs with positional sensing starting from Snare
 									if (pos_id < 3) skipPos = true;
@@ -2149,52 +2129,72 @@ public class Main_window {
 									if (pos_id > 7) skipPos = true;
 									if ((configOptions.mcuType < 2) && (pos_id > 3)) skipPos = true;
 								}
-								System.out.printf("MCU = %d, pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id + 1, pos_id );
-								retries = Constants.SYSEX_TIMEOUT_RETRIES;
-								configFull.configPos[pos_id].sysexReceived = false;
+								//System.out.printf("MCU = %d, left pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id, pos_id );
 								if (!skipPos) {
+									retries = Constants.SYSEX_TIMEOUT_RETRIES;
+									configFull.configPos[pad_id].sysexReceived = false;
 									while (retries > 0) {
 										delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
-										midi_handler.requestConfigPos(pos_id);
-										while ((delayCounter > 0) && (!configFull.configPos[pos_id].sysexReceived)) {
+										midi_handler.requestConfigPos(pad_id);
+										while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
 											delayMs(1);
 											delayCounter--;
 										}
-										if (configFull.configPos[pos_id].sysexReceived) {
+										if (configFull.configPos[pad_id].sysexReceived) {
 											break;
 										} else {
 											midi_reset_ports();
 										}
 										retries--;
-									}												
-									
+									}																				
 								} else {
 									//Fake that we received Pos Sysex on Atmega for inputs where Pos is no present
-									pos_id = pad_id + 1;
-									System.out.printf("Faking sysex received for pad_id = %d, pos_id = %d\n", pad_id + 1, pos_id );
-									configFull.configPos[pos_id].sysexReceived = true;
+									//System.out.printf("Faking sysex received for left pad_id = %d, pos_id = %d\n", pad_id, pos_id );
+									configFull.configPos[pad_id].sysexReceived = true;
 								}
-								if (!configFull.configPos[pos_id].sysexReceived) {
+								if (!configFull.configPos[pad_id].sysexReceived) {
 									getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
 								} else {
+									skipPos = false;
+							    	if (configOptions.mcuType == 0) skipPos = true;	// Unknown MCU so it's not clear how to handle positional sysex
+									pos_id = pad_id + 1;
+									if (configOptions.mcuType < 3){
+										//Atmega MCU, 8 (Atmega1284) or 4 (Atmega644) head/bow inputs with positional sensing starting from Snare
+										if (pos_id < 3) skipPos = true;
+										pos_id = pos_id - 3;
+										if ((pos_id&1) > 0) skipPos = true;
+										pos_id = pos_id/2;
+										if (pos_id > 7) skipPos = true;
+										if ((configOptions.mcuType < 2) && (pos_id > 3)) skipPos = true;
+									}
+									//System.out.printf("MCU = %d, right pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id + 1, pos_id );
 									retries = Constants.SYSEX_TIMEOUT_RETRIES;
-									configFull.config3rds[(pad_id - 1)/2].sysexReceived = false;
-									while (retries > 0) {
-										delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_3RD_SIZE/2);
-										midi_handler.requestConfig3rd((pad_id - 1)/2);
-										while ((delayCounter > 0) && (!configFull.config3rds[(pad_id - 1)/2].sysexReceived)) {
-											delayMs(1);
-											delayCounter--;
-										}			
-										if (configFull.config3rds[(pad_id - 1)/2].sysexReceived) {
-											break;
-										} else {
-											midi_reset_ports();
-										}
-										retries--;
-									}												
-									if (!configFull.config3rds[(pad_id - 1)/2].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_3RD_ZONE_TXT);
-								}					
+									configFull.configPos[pad_id + 1].sysexReceived = false;
+									if (!skipPos) {
+										while (retries > 0) {
+											delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
+											midi_handler.requestConfigPos(pad_id + 1);
+											while ((delayCounter > 0) && (!configFull.configPos[pad_id + 1].sysexReceived)) {
+												delayMs(1);
+												delayCounter--;
+											}
+											if (configFull.configPos[pad_id + 1].sysexReceived) {
+												break;
+											} else {
+												midi_reset_ports();
+											}
+											retries--;
+										}												
+										
+									} else {
+										//Fake that we received Pos Sysex on Atmega for inputs where Pos is no present
+										//System.out.printf("Faking sysex right received for pad_id = %d, pos_id = %d\n", pad_id + 1, pos_id );
+										configFull.configPos[pad_id + 1].sysexReceived = true;
+									}
+									if (!configFull.configPos[pad_id + 1].sysexReceived) {
+										getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);
+									}
+								}
 							}				
 						}						
 					}					
@@ -2232,7 +2232,7 @@ public class Main_window {
 							if (pos_id > 7) skipPos = true;
 							if ((configOptions.mcuType < 2) && (pos_id > 3)) skipPos = true;
 						}
-						System.out.printf("MCU = %d, pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id, pos_id );
+						//System.out.printf("MCU = %d, pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id, pos_id );
 						if (!skipPos) {
 							retries = Constants.SYSEX_TIMEOUT_RETRIES;
 							configFull.configPos[0].sysexReceived = false;
@@ -2253,8 +2253,7 @@ public class Main_window {
 							}																			
 						} else {
 							//Fake that we received Pos Sysex on Atmega for inputs where Pos is no present
-							pos_id = pad_id;
-							System.out.printf("Faking Sysex received for pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id, pos_id );
+							//System.out.printf("Faking Sysex received for pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id, pos_id );
 							configFull.configPos[0].sysexReceived = true;
 						}
 						if (!configFull.configPos[0].sysexReceived) {
@@ -2325,25 +2324,25 @@ public class Main_window {
 						if (pos_id > 7) skipPos = true;
 						if ((configOptions.mcuType < 2) && (pos_id > 3)) skipPos = true;
 					}
-					System.out.printf("MCU = %d, pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id, pos_id );
+					//System.out.printf("MCU = %d, pad_id = %d, pos_id = %d\n", configOptions.mcuType, pad_id, pos_id );
 					if (!skipPos) {
 						retries = Constants.SYSEX_TIMEOUT_RETRIES;
-						configFull.configPos[pos_id].sysexReceived = false;
+						configFull.configPos[pad_id].sysexReceived = false;
 						while (retries > 0) {
 							delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_POS_SIZE/2);
-							midi_handler.requestConfigPos(pos_id);
-							while ((delayCounter > 0) && (!configFull.configPos[pos_id].sysexReceived)) {
+							midi_handler.requestConfigPos(pad_id);
+							while ((delayCounter > 0) && (!configFull.configPos[pad_id].sysexReceived)) {
 								delayMs(1);
 								delayCounter--;
 							}
-							if (configFull.configPos[pos_id].sysexReceived) {
+							if (configFull.configPos[pad_id].sysexReceived) {
 								break;
 							} else {
 								midi_reset_ports();
 							}
 							retries--;
 						}																
-						if (!configFull.configPos[pos_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);						
+						if (!configFull.configPos[pad_id].sysexReceived) getTimedOut(Constants.SYSEX_TIMEOUT_POS_TXT);						
 					}
 				}		
 			} else {
@@ -2400,26 +2399,29 @@ public class Main_window {
 		
 		    	if (configOptions.mcuType == 0) return;	// Unknown MCU so it's not clear how to handle positional sysex
 				int id = pad_id;
+				boolean skipPos = false;
 				if (configOptions.mcuType < 3){
 					//Atmega MCU, 8 (Atmega1284) or 4 (Atmega644) head/bow inputs with positional sensing starting from Snare
-					if (id < 3) return;
+					if (id < 3) skipPos = true;
 					id = id - 3;
-					if ((id&1) > 0) return;
+					if ((id&1) > 0) skipPos = true;
 					id = id/2;
-					if (id > 7) return;
-					if ((configOptions.mcuType < 2) && (id > 3)) return;
+					if (id > 7) skipPos = true;
+					if ((configOptions.mcuType < 2) && (id > 3)) skipPos = true;
 				}
-				Utils.copyConfigPosToSysex(configFull.configPos[pad_id], sysexPos, configOptions.chainId, pad_id);
-				sysexPos[4] = (byte)id; 
-				currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_POS_TXT;
-				midi_handler.sendSysex(sysexPos);
-				//delayMs(configOptions.sysexDelay);
-				//delayMs(Constants.MD_SYSEX_POS_SIZE/3);	
-				sendWithReport(withReport);
-				midi_handler.requestConfigPos(pad_id);
-		    	while (compareSysexToConfigIsOn) {
-		    		delayMs(2);
-		    	}
+				if (!skipPos) {
+					Utils.copyConfigPosToSysex(configFull.configPos[pad_id], sysexPos, configOptions.chainId, pad_id);
+					sysexPos[4] = (byte)id; 
+					currentSysexSendTimeoutString = Constants.SYSEX_TIMEOUT_POS_TXT;
+					midi_handler.sendSysex(sysexPos);
+					//delayMs(configOptions.sysexDelay);
+					//delayMs(Constants.MD_SYSEX_POS_SIZE/3);	
+					sendWithReport(withReport);
+					midi_handler.requestConfigPos(pad_id);
+			    	while (compareSysexToConfigIsOn) {
+			    		delayMs(2);
+			    	}					
+				}
 		    	getPadOneZoneThisThread(pad_id);
 			} else {
 				midiIsNotOpen();
@@ -2704,6 +2706,7 @@ public class Main_window {
 				int retries = Constants.SYSEX_TIMEOUT_RETRIES;
 				compareSysexToConfigIsOn = false;
 				configFull.configConfigNames[name_id].sysexReceived = false;
+			    //System.out.printf("Requesting ConfigName id %d\n", name_id);
 				while (retries > 0) {
 					delayCounter = configOptions.sysexDelay + (Constants.MD_SYSEX_CONFIG_NAME_SIZE/2);
 					midi_handler.requestConfigConfigName(name_id);
@@ -2807,9 +2810,15 @@ public class Main_window {
 	}
 */	
 	private void getAllCustomNamesThisThread() {
+		int max_names = configFull.customNamesCount;
 		if (midi_handler.isMidiOpen()) {
 			compareSysexToConfigIsOn = false;
-			for (int i = 0; i < configFull.customNamesCount; i++) {
+			if (configOptions.mcuType < 2) { // Atmega644 can have 16 custom names max
+				if (configFull.customNamesCount > 16) {
+					max_names = 16;
+				}
+			}
+			for (int i = 0; i < max_names; i++) {
 				getCustomNameThisThread(i);
 			}
 		} else {
@@ -2839,6 +2848,7 @@ public class Main_window {
 		if (midi_handler.isMidiOpen()) {
 			if (configFull.configGlobalMisc.config_names_en) {
 				compareSysexToConfigIsOn = false;
+				//System.out.printf("Configs names to get = %d\n", configFull.configNamesCount);
 				for (int i = 0; i < configFull.configNamesCount; i++) {
 					getConfigNameThisThread(i);
 				}			
@@ -2849,12 +2859,18 @@ public class Main_window {
 	}
 
 	private void sendAllCustomNamesThisThread(boolean withReport) {
+		int max_names = configFull.customNamesCount;
+		if (configOptions.mcuType < 2) { // Atmega644 can have 16 custom names max
+			if (configFull.customNamesCount > 16) {
+				max_names = 16;
+			}
+		}
 		if (midi_handler.isMidiOpen()) {
-			for (int i = 0; i < (configFull.customNamesCount - 1); i++) {
+			for (int i = 0; i < (max_names - 1); i++) {
 				sendCustomNameThisThread(i, false);
 			}
 			compareSysexToConfigLast = withReportInTask;
-			sendCustomNameThisThread(configFull.customNamesCount - 1, false);
+			sendCustomNameThisThread(max_names - 1, false);
 		} else {
 			midiIsNotOpen();
 		}
@@ -3517,6 +3533,7 @@ public class Main_window {
 						Utils.copySysexToConfigConfigName(midi_handler.bufferIn, configFull.configConfigNames[buffer[4]]);
 						Utils.copySysexToConfigConfigName(midi_handler.bufferIn, moduleConfigFull.configConfigNames[buffer[4]]);
 						configFull.configConfigNames[buffer[4]].sysexReceived = true;
+					    //System.out.printf("sysexReceived for ConfigName id %d set to true\n", buffer[4]);
 						setSysexOk();
 						if (buffer[4] < configFull.configNamesCount) {
 							menuItemsSaveToSlot[buffer[4]].setText(((Integer)(buffer[4]+1)).toString() + " " + configFull.configConfigNames[buffer[4]].name);
@@ -3573,6 +3590,7 @@ public class Main_window {
 							int b;
 							b = (int)buffer[4];
 							lblCfgSlotsNr.setText(((Integer)b).toString());
+							configFull.configNamesCount = b;
 							configFull.configCountSysexReceived = true;
 							setSysexOk();
 							popupMenuSaveToSlot.removeAll();

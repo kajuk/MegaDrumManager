@@ -23,7 +23,7 @@ public class ConfigFull implements java.io.Serializable {
 	public int configNamesCount;
 	public int configCurrent;
 	public boolean configNameChanged = false;
-	public boolean configNameSysexReceived = false;
+	//public boolean configNameSysexReceived = false;
 	public boolean configCountSysexReceived = false;
 	public boolean configCurrentSysexReceived = false;	
 	private static final String configGlobalMiscPrefix = "global_misc.";
