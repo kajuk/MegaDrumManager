@@ -130,7 +130,7 @@ public interface Constants {
 	public static final String HELP_ABOUT = "<html><font size=2>MegaDrum Manager</font></html>\n" +
 			"<html><font size=2>Version: " + MD_VERSION + "</font></html>\n" +
 			"<html><font size=2>www.megadrum.info</font></html>\n"+
-			"<html><font size=2>\u00a9 2007-2016 Dmitri Skachkov</font></html>";
+			"<html><font size=2>\u00a9 2007-2017 Dmitri Skachkov</font></html>";
 	public static final String HELP_ABOUT_MMJ = "\n<html><font size=2>mmj Library is included with MegaDrum Manager for Mac OS X</font></html>\n" +
 			"<html><font size=2>mmj is copyright of Humatic</font></html>\n" +
 			"<html><font size=2>See www.humatic.de/htools/mmj.htm for details</font></html>";
